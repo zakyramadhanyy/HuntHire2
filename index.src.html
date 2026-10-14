@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HuntHire ― Puzzle Studio (Opsi B)</title>
+  <meta name="description" content="Executive recruitment firm helping your company hire the right team." />
+  <meta name="theme-color" content="#29A869" />
+  <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion');</script>
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700&display=swap" />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@300,400,500,700,800&display=swap" />
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="puzzle" viewBox="0 0 156 240">
+      <rect x="0" y="0" width="66" height="66" /><circle cx="121" cy="35" r="35" /><rect x="0" y="86" width="156" height="68" /><circle cx="35" cy="205" r="35" /><rect x="90" y="174" width="66" height="66" />
+    </symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+  </svg>
+
+  <!-- Custom cursor: a puzzle piece that changes shape per target -->
+  <div class="cursor" data-cursor aria-hidden="true"><span data-cursor-label></span></div>
+
+  <!-- INTRO: pieces drop in, click together, the bar floods the screen -->
+  <div class="intro" data-intro aria-hidden="true">
+    <div class="intro__logo">
+      <svg class="intro__mark" viewBox="0 0 156 240" data-intro-mark>
+        <rect class="ip" x="0" y="0" width="66" height="66" />
+        <circle class="ip" cx="121" cy="35" r="35" />
+        <rect class="ip ip--bar" x="0" y="86" width="156" height="68" />
+        <circle class="ip" cx="35" cy="205" r="35" />
+        <rect class="ip" x="90" y="174" width="66" height="66" />
+      </svg>
+      <div class="intro__word" data-intro-word><b>Hunt</b>Hire</div>
+    </div>
+    <p class="intro__tag" data-intro-tag>Executive Recruitment Firm</p>
+    <div class="intro__flood" data-intro-flood></div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header" data-header>
+    <a href="#top" class="logo" data-logo aria-label="HuntHire home" data-cursor-type="square">
+      <svg class="logo__mark" viewBox="0 0 156 240">
+        <rect class="lp" x="0" y="0" width="66" height="66" /><circle class="lp" cx="121" cy="35" r="35" /><rect class="lp" x="0" y="86" width="156" height="68" /><circle class="lp" cx="35" cy="205" r="35" /><rect class="lp" x="90" y="174" width="66" height="66" />
+      </svg>
+      <span class="logo__word"><b>Hunt</b>Hire</span>
+    </a>
+    <div class="header__actions">
+      <a href="https://hunthire.id/contact" class="chip chip--jade" data-magnetic>Hire talent</a>
+      <a href="https://hunthire.id/apply" class="chip chip--lime" data-magnetic>Find a job</a>
+      <button class="menu-btn" data-menu-btn aria-expanded="false" aria-controls="menu" data-magnetic>
+        <span class="menu-btn__icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="menu-btn__text" data-menu-text>Menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MENU: five coloured panels wipe down like puzzle columns -->
+  <nav class="menu" id="menu" data-menu aria-label="Main" aria-hidden="true">
+    <div class="menu__panels" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="menu__inner">
+      <div class="menu__group">
+        <p class="menu__label">For Companies</p>
+        <a href="https://hunthire.id/services" class="menu__link">Our Services</a>
+        <a href="#approach" class="menu__link">Our Approach</a>
+        <a href="https://hunthire.id/contact" class="menu__link">Partner with us</a>
+      </div>
+      <div class="menu__group">
+        <p class="menu__label">For Talent</p>
+        <a href="https://hunthire.id/apply" class="menu__link">Apply for Job</a>
+        <a href="https://hunthire.id/event" class="menu__link">Events &amp; Podcast</a>
+      </div>
+      <div class="menu__group">
+        <p class="menu__label">HuntHire</p>
+        <a href="#hunters" class="menu__link">Our Hunters</a>
+        <a href="https://hunthire.id/about" class="menu__link">About us</a>
+        <a href="#insights" class="menu__link">Insights</a>
+        <a href="https://hunthire.id/contact" class="menu__link">Contact</a>
+      </div>
+      <div class="menu__foot">
+        <span>recruitment@hunthire.id</span>
+        <span>WTC 3, Jl. Jend. Sudirman Kav 29, Jakarta</span>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+
+    <!-- 1. HERO — two audiences, one puzzle; pulls apart on scroll -->
+    <section class="hero" data-hero>
+      <div class="hero__sticky">
+        <div class="hero__back">
+          <p class="hero__statement" data-hero-statement>Every great team is a puzzle. We find the piece that fits.</p>
+        </div>
+
+        <div class="hero__split" data-split-root>
+          <a href="https://hunthire.id/contact" class="side side--client" data-side="client" data-cursor-type="square">
+            <span class="side__label">For companies</span>
+            <h1 class="side__title" data-lines>Hire the<br />right team</h1>
+            <p class="side__text">Executive search across Indonesia and Southeast Asia, led by consultants who represent you with distinction.</p>
+            <span class="side__cta">Partner with us <i><svg><use href="#arrow" /></svg></i></span>
+          </a>
+          <a href="https://hunthire.id/apply" class="side side--talent" data-side="talent">
+            <span class="side__label">For talent</span>
+            <h2 class="side__title" data-lines>Find your<br />perfect fit</h2>
+            <p class="side__text">Senior and executive roles with the companies shaping FMCG, finance, tech, energy and health.</p>
+            <span class="side__cta">Explore jobs <i><svg><use href="#arrow" /></svg></i></span>
+          </a>
+        </div>
+
+        <svg class="hero__mark" viewBox="0 0 156 240" data-hero-mark aria-hidden="true">
+          <rect class="hp" x="0" y="0" width="66" height="66" />
+          <circle class="hp" cx="121" cy="35" r="35" />
+          <rect class="hp" x="0" y="86" width="156" height="68" />
+          <circle class="hp" cx="35" cy="205" r="35" />
+          <rect class="hp" x="90" y="174" width="66" height="66" />
+        </svg>
+
+        <p class="hero__meta">Est. 2018 · Jakarta · ID SG MY PH TH VN</p>
+        <p class="hero__hint"><span></span>Scroll to pull the pieces apart</p>
+      </div>
+    </section>
+
+    <!-- 2. THE PUZZLE — interactive drag & drop of the logo -->
+    <section class="game" id="puzzle" data-game>
+      <div class="game__copy">
+        <p class="eyebrow"><i></i>How we work</p>
+        <h2 class="h-xl" data-lines>Five pieces. One perfect fit.</h2>
+        <p class="game__lead">Every HuntHire placement is built from the same five pieces. Drag each one into the mark to see how we put a team together.</p>
+        <div class="game__info" data-game-info aria-live="polite">
+          <span class="game__info-tag" data-info-tag>Start here</span>
+          <h3 data-info-title>Grab any piece</h3>
+          <p data-info-text>Each shape stands for one part of how we hunt. Drop it on its outline.</p>
+        </div>
+        <div class="game__actions">
+          <button class="btn btn--night" data-game-solve data-magnetic>Solve it for me</button>
+          <button class="btn btn--ghost" data-game-reset data-magnetic>Reset</button>
+        </div>
+      </div>
+
+      <div class="game__stage">
+        <div class="game__board" data-board>
+          <span class="slot slot--sq" data-slot="0"></span>
+          <span class="slot slot--ci" data-slot="1"></span>
+          <span class="slot slot--bar" data-slot="2"></span>
+          <span class="slot slot--ci" data-slot="3"></span>
+          <span class="slot slot--sq" data-slot="4"></span>
+          <div class="game__done" data-game-done><b>Perfect fit.</b><span>That's how we build teams.</span></div>
+        </div>
+        <div class="game__tray" data-tray>
+          <button class="piece piece--ci" data-piece="1" aria-label="STAR approach piece"><span>STAR</span></button>
+          <button class="piece piece--sq" data-piece="4" aria-label="Responsibility piece"><span>Care</span></button>
+          <button class="piece piece--bar" data-piece="2" aria-label="Network piece"><span>Network</span></button>
+          <button class="piece piece--sq" data-piece="0" aria-label="Research piece"><span>Research</span></button>
+          <button class="piece piece--ci" data-piece="3" aria-label="Speed piece"><span>Speed</span></button>
+        </div>
+      </div>
+      <div class="confetti" data-confetti aria-hidden="true"></div>
+    </section>
+
+    <!-- 3. APPROACH — horizontal scroll, one piece per step -->
+    <section class="approach" id="approach" data-approach>
+      <div class="approach__head">
+        <p class="eyebrow eyebrow--light"><i></i>Our approach</p>
+        <div class="approach__progress" aria-hidden="true">
+          <svg viewBox="0 0 156 240" data-approach-mark>
+            <rect class="ap" x="0" y="0" width="66" height="66" /><circle class="ap" cx="121" cy="35" r="35" /><rect class="ap" x="0" y="86" width="156" height="68" /><circle class="ap" cx="35" cy="205" r="35" /><rect class="ap" x="90" y="174" width="66" height="66" />
+          </svg>
+          <span><b data-approach-num>01</b> / 05</span>
+        </div>
+      </div>
+      <div class="approach__track" data-approach-track>
+        <article class="step">
+          <div class="step__shape step__shape--sq"></div>
+          <span class="step__num">01</span>
+          <h3>In-depth research</h3>
+          <p>We study your company and culture, then turn it into a compelling pitch for high-potential candidates.</p>
+        </article>
+        <article class="step">
+          <div class="step__shape step__shape--ci"></div>
+          <span class="step__num">02</span>
+          <h3>Hunt the network</h3>
+          <p>We map the market and reach into a talent network built since 2018 across six countries.</p>
+        </article>
+        <article class="step">
+          <div class="step__shape step__shape--bar"></div>
+          <span class="step__num">03</span>
+          <h3>STAR screening</h3>
+          <p>Pre-screening interviews using the STAR approach, so every candidate matches at least 70% of your requirements.</p>
+        </article>
+        <article class="step">
+          <div class="step__shape step__shape--ci"></div>
+          <span class="step__num">04</span>
+          <h3>Shortlist with speed</h3>
+          <p>Our secret weapon is speed: exceptional candidates, delivered with unprecedented agility.</p>
+        </article>
+        <article class="step">
+          <div class="step__shape step__shape--sq"></div>
+          <span class="step__num">05</span>
+          <h3>Full responsibility</h3>
+          <p>From first contact to day one, including salary negotiation and support through probation.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 4. NUMBERS -->
+    <section class="numbers" data-numbers>
+      <div class="stat" data-cursor-type="square"><span class="stat__shape stat__shape--sq"></span><b data-count="2018">2018</b><span>Established in Jakarta</span></div>
+      <div class="stat" data-cursor-type="square"><span class="stat__shape stat__shape--ci"></span><b data-count="6">6</b><span>Countries served</span></div>
+      <div class="stat" data-cursor-type="square"><span class="stat__shape stat__shape--bar"></span><b data-count="10">10</b><span>Industries covered</span></div>
+      <div class="stat" data-cursor-type="square"><span class="stat__shape stat__shape--ci"></span><b data-count="70" data-suffix="%+">70%+</b><span>Minimum requirement match</span></div>
+    </section>
+
+    <!-- 5. INDUSTRIES — same pieces, a new picture per industry -->
+    <section class="industries" data-industries>
+      <div class="industries__visual">
+        <div class="arrange" data-arrange>
+          <i class="ar ar--sq"></i><i class="ar ar--ci"></i><i class="ar ar--bar"></i><i class="ar ar--ci"></i><i class="ar ar--sq"></i>
+        </div>
+        <p class="industries__caption" data-arrange-caption>Same five pieces. A different picture for every industry.</p>
+      </div>
+      <div class="industries__list">
+        <p class="eyebrow"><i></i>Industry coverage</p>
+        <ul data-industry-list>
+          <li data-cursor-type="square">FMCG</li><li data-cursor-type="square">FSI</li><li data-cursor-type="square">Manufacturers</li><li data-cursor-type="square">Digital Banks</li><li data-cursor-type="square">Financial Tech</li>
+          <li data-cursor-type="square">Telco</li><li data-cursor-type="square">Renewable Energy</li><li data-cursor-type="square">Pharmaceutical</li><li data-cursor-type="square">Health</li><li data-cursor-type="square">Tobacco</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. SERVICES — accordion with shape-masked image -->
+    <section class="services" data-services>
+      <div class="services__head">
+        <p class="eyebrow"><i></i>For companies</p>
+        <h2 class="h-xl" data-lines>Services built around your hire.</h2>
+      </div>
+      <div class="services__body">
+        <div class="services__media">
+          <div class="services__mask" data-service-mask>
+            <img src="https://images.prismic.io/hunthire/ZoGHgh5LeNNTwqHa_recruitment.jpg?auto=format,compress&w=1400&q=80" alt="" loading="lazy" />
+          </div>
+        </div>
+        <div class="acc" data-acc>
+          <div class="acc__item is-open" data-shape="sq">
+            <button class="acc__btn" aria-expanded="true"><span class="acc__num">01</span>Contingency Service<i></i></button>
+            <div class="acc__panel"><p>We handle the entire recruitment process, from research to onboarding, fostering a committed partnership to secure top talent aligned with your company culture.</p></div>
+          </div>
+          <div class="acc__item" data-shape="ci">
+            <button class="acc__btn" aria-expanded="false"><span class="acc__num">02</span>Project-Based Service<i></i></button>
+            <div class="acc__panel"><p>For targeted hiring projects with specific headcounts and timelines, we assign a dedicated consultant team to meet your KPIs within agreed timelines.</p></div>
+          </div>
+          <div class="acc__item" data-shape="bar">
+            <button class="acc__btn" aria-expanded="false"><span class="acc__num">03</span>Tailored Service<i></i></button>
+            <div class="acc__panel"><p>Every organization faces unique hiring challenges. Let's discuss your needs, and we'll tailor a solution to support your hiring goals and vision.</p></div>
+          </div>
+          <div class="acc__item" data-shape="ci2">
+            <button class="acc__btn" aria-expanded="false"><span class="acc__num">04</span>Business &amp; Executive Coaching<i></i></button>
+            <div class="acc__panel"><p>Coaching programmes for leaders and teams. <a href="https://hunthire.id/services">See the full service list</a>.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. HUNTERS — consultants in shape masks -->
+    <section class="hunters" id="hunters" data-hunters>
+      <div class="hunters__head">
+        <div>
+          <p class="eyebrow eyebrow--light"><i></i>Meet our consultants</p>
+          <h2 class="h-xl" data-lines>The hunters behind every hire.</h2>
+        </div>
+        <a href="https://hunthire.id/consultants" class="btn btn--lime" data-magnetic>All consultants</a>
+      </div>
+      <div class="hunters__grid" data-hunter-grid></div>
+    </section>
+
+    <!-- 8. INSIGHTS — rows with cursor-following preview -->
+    <section class="insights" id="insights" data-insights>
+      <div class="insights__head">
+        <p class="eyebrow"><i></i>News &amp; insights</p>
+        <a href="https://hunthire.id/news" class="link-arrow">All insights <i><svg><use href="#arrow" /></svg></i></a>
+      </div>
+      <ul class="insights__list" data-insight-list></ul>
+      <div class="preview" data-preview aria-hidden="true"><img data-preview-img alt="" /></div>
+    </section>
+
+    <!-- 9. CTA — a field of pieces that reacts to the cursor -->
+    <section class="cta" data-cta>
+      <div class="field" data-field aria-hidden="true"></div>
+      <div class="cta__content">
+        <h2 class="cta__title" data-lines>Let's complete<br />your team.</h2>
+        <div class="cta__actions">
+          <a href="https://hunthire.id/contact" class="btn btn--jade" data-magnetic>Partner with us</a>
+          <a href="https://hunthire.id/apply" class="btn btn--night" data-magnetic>Apply for Job</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" data-footer>
+    <div class="footer__grid">
+      <div class="footer__col">
+        <h5>For Companies</h5>
+        <a href="https://hunthire.id/services">Our Services</a><a href="#approach">Our Approach</a><a href="https://hunthire.id/contact">Partner with us</a>
+      </div>
+      <div class="footer__col">
+        <h5>For Talent</h5>
+        <a href="https://hunthire.id/apply">Apply for Job</a><a href="https://hunthire.id/event">Events &amp; Podcast</a>
+      </div>
+      <div class="footer__col">
+        <h5>HuntHire</h5>
+        <a href="#hunters">Our Hunters</a><a href="https://hunthire.id/about">About us</a><a href="#insights">Insights</a><a href="https://hunthire.id/privacy-policy">Privacy Policy</a>
+      </div>
+      <div class="footer__col">
+        <h5>Office</h5>
+        <p>World Trade Centre (WTC 3), Retail Podium 2nd Floor, Jl. Jend. Sudirman Kav 29, Jakarta 12920</p>
+        <a href="mailto:recruitment@hunthire.id">recruitment@hunthire.id</a>
+      </div>
+    </div>
+    <div class="footer__drop" data-drop aria-hidden="true">
+      <i class="fd fd--sq"></i><i class="fd fd--ci"></i><i class="fd fd--bar"></i><i class="fd fd--ci"></i><i class="fd fd--sq"></i>
+      <i class="fd fd--sq"></i><i class="fd fd--ci"></i><i class="fd fd--bar"></i><i class="fd fd--ci"></i><i class="fd fd--sq"></i>
+    </div>
+    <div class="footer__word" data-footer-word aria-label="HuntHire"><b>Hunt</b>Hire</div>
+    <div class="footer__bottom">
+      <span>©PT Profesional Rekrutmen Indonesia 2026</span>
+      <span>LinkedIn · Instagram · WhatsApp</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/Draggable.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

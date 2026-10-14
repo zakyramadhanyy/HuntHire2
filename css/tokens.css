@@ -1,0 +1,61 @@
+/* Design tokens — HuntHire Brand Guidelines 2023 + measured values from hunthire.id */
+:root {
+  /* Primary */
+  --c-jade: #29A869;
+  --c-lime: #C1FF04;
+  --c-slate: #2B484E;
+  /* Text */
+  --c-night: #090F06;
+  --c-white: #FDFFFE;
+  --c-flash: #F0F0F0;
+  /* Secondary */
+  --c-tiffany: #A0D9CE;
+  --c-tea: #C6EBD4;
+  /* Tertiary (accents only, never floods — guideline p.19) */
+  --c-indigo-tint: #A497EE;
+  --c-blue-tint: #8DB4FE;
+  /* UI */
+  --c-header: #F7F8F7;
+  --c-grey: #3E3F3F;
+  --c-muted: rgba(9, 15, 6, 0.22);
+
+  /* Theme (animated by colorShift.js) */
+  --bg: var(--c-white);
+  --fg: var(--c-night);
+
+  /* Fonts */
+  --f-head: 'General Sans', 'Inter', system-ui, sans-serif;
+  --f-body: 'Cabinet Grotesk', 'Inter', system-ui, sans-serif;
+
+  /* Fluid unit — designed at 1512px like the live site */
+  --u: calc(100vw / 1512);
+
+  /* Type scale (design px × --u, floored for small screens) */
+  --fs-giant: max(64px, calc(200 * var(--u)));
+  --fs-h1: max(40px, calc(72 * var(--u)));
+  --fs-h3: max(30px, calc(40 * var(--u)));
+  --fs-xl: max(24px, calc(44 * var(--u)));
+  --fs-h2: max(20px, calc(24 * var(--u)));
+  --fs-body: max(16px, calc(18 * var(--u)));
+  --fs-nav: max(14px, calc(16 * var(--u)));
+  --fs-small: max(13px, calc(14 * var(--u)));
+
+  /* Spacing */
+  --gutter: max(16px, calc(20 * var(--u)));
+  --pad-x: max(20px, calc(137 * var(--u)));
+  --pad-y: max(72px, calc(120 * var(--u)));
+  --header-h: max(68px, calc(95 * var(--u)));
+
+  /* Shape */
+  --r-sm: 8px;
+  --r-md: 16px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.11, 0.96, 0.33, 0.98);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --d-fast: 0.3s;
+  --d-base: 0.5s;
+  --d-mid: 0.8s;
+  --d-slow: 1.2s;
+}
