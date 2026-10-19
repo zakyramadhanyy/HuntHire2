@@ -1,5 +1,7 @@
 /* HuntHire — Opsi B "Puzzle Studio".
-   Every interaction is built from the five pieces of the HuntHire Puzzle mark. */
+   Every interaction is built from the five pieces of the HuntHire Puzzle mark.
+   Motion language: calm expo easing (after Fleava), clear orientation and trust cues (after Egon Zehnder).
+   The logo itself is never scattered, rotated or recoloured (Brand Guidelines, Logo Do-nots). */
 (function () {
   const root = document.documentElement;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,22 +16,24 @@
     $('[data-hunter-grid]').innerHTML = HH.consultants
       .map(
         (p, i) => `
-        <article class="hunter hunter--${(i + Math.floor(i / 4)) % 2 ? 'ci' : 'sq'}">
+        <article class="hunter hunter--${(i + Math.floor(i / 4)) % 2 ? 'ci' : 'sq'}" data-cursor-text="View">
           <div class="hunter__mask"><img src="${p.photo}" alt="${p.name}" loading="lazy" /></div>
           <h4>${p.name}</h4>
           <p>${p.role}</p>
-          <div class="hunter__links"><a href="mailto:recruitment@hunthire.id">Email</a><a href="https://www.linkedin.com/company/hunthire/">LinkedIn</a></div>
+          <div class="hunter__links"><a href="mailto:recruitment@hunthire.id" class="uline">Email</a><a href="https://www.linkedin.com/company/hunthire/" class="uline">LinkedIn</a></div>
         </article>`
       )
       .join('');
 
+    // Each row fills the width: number + category | title | summary | arrow
     $('[data-insight-list]').innerHTML = HH.news
       .map(
-        (n) => `
+        (n, i) => `
         <li class="insight">
           <a href="https://hunthire.id/news" data-img="${n.photo}">
-            <span class="insight__tag">${n.tag}</span>
+            <span class="insight__meta"><span class="insight__num">${String(i + 1).padStart(2, '0')}</span><span class="insight__tag">${n.tag}</span></span>
             <span class="insight__title">${n.title}</span>
+            <span class="insight__excerpt">${n.excerpt}</span>
             <span class="insight__arrow"><svg><use href="#arrow" /></svg></span>
           </a>
         </li>`
@@ -37,12 +41,23 @@
       .join('');
   }
 
-  /* ───────── Services accordion: the image mask changes shape per service ───────── */
-  const MASKS = { sq: '0% 0% 0% 0%', ci: '50% 50% 50% 50%', bar: '50% 50% 0% 0%', ci2: '50% 0% 50% 0%' };
-
+  /* ───────── Services accordion: one photo per service, the rounded frame never changes ───────── */
   function accordion() {
     const items = $$('.acc__item');
-    const mask = $('[data-service-mask]');
+    const photos = $$('[data-service-mask] img');
+    let current = 0;
+
+    // The new photo wipes up over the previous one and settles from a slight zoom
+    const showPhoto = (idx) => {
+      if (idx === current || !photos[idx]) return;
+      photos.forEach((p, i) => {
+        p.classList.toggle('is-prev', i === current);
+        p.classList.toggle('is-active', i === idx);
+      });
+      current = idx;
+      if (!hasGsap || reduced) return;
+      gsap.fromTo(photos[idx], { clipPath: 'inset(100% 0% 0% 0%)', scale: 1.12 }, { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, duration: 1.1, ease: 'expo.out', overwrite: true });
+    };
 
     const setOpen = (item, open) => {
       if (item.classList.contains('is-open') === open) return;
@@ -54,12 +69,10 @@
       else gsap.to(panel, { height: 0, duration: 0.5, ease: 'expo.out' });
     };
 
-    items.forEach((item) => {
+    items.forEach((item, idx) => {
       $('.acc__btn', item).addEventListener('click', () => {
         items.forEach((o) => setOpen(o, o === item));
-        if (!hasGsap) return;
-        gsap.to(mask, { borderRadius: MASKS[item.dataset.shape], duration: 1.1, ease: 'expo.out' });
-        gsap.fromTo($('img', mask), { scale: 1.15 }, { scale: 1, duration: 1.2, ease: 'expo.out' });
+        showPhoto(idx);
       });
     });
   }
@@ -87,7 +100,7 @@
       const r = el.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     };
-    const tilt = () => gsap.utils.random(-14, 14);
+    const tilt = () => gsap.utils.random(-8, 8);
 
     const showInfo = (id) => {
       const [t, h, p] = INFO[id];
@@ -113,10 +126,54 @@
     const snapTo = (piece, slot, duration) => {
       const a = center(piece);
       const b = center(slot);
-      gsap.to(piece, { x: `+=${b.x - a.x}`, y: `+=${b.y - a.y}`, rotation: 0, scale: 1, duration, ease: 'back.out(1.8)' });
+      gsap.to(piece, { x: `+=${b.x - a.x}`, y: `+=${b.y - a.y}`, rotation: 0, scale: 1, duration, ease: 'expo.out' });
     };
 
+    // Guidance: until the visitor tries, a faint copy of "Network" glides to its outline and the
+    // outline pulses. It stops for good the moment any piece is touched or "Solve it for me" is used.
+    const stage = $('[data-stage]');
+    const ghost = $('[data-ghost]');
+    const hint = $('[data-game-hint]');
+    const demoPiece = pieces.find((p) => p.dataset.piece === '2');
+    const demoSlot = slots[2];
+    let demo = null;
+    let learned = false;
+    const inStage = (el) => {
+      const r = el.getBoundingClientRect();
+      const st = stage.getBoundingClientRect();
+      return { x: r.left - st.left + r.width / 2, y: r.top - st.top + r.height / 2 };
+    };
+    const startDemo = () => {
+      if (learned || demo || reduced || demoPiece._slot) return;
+      const a = inStage(demoPiece);
+      const b = inStage(demoSlot);
+      const w = ghost.offsetWidth / 2;
+      const h = ghost.offsetHeight / 2;
+      demoSlot.classList.add('is-target');
+      demo = gsap
+        .timeline({ repeat: -1, repeatDelay: 1.4 })
+        .set(ghost, { x: a.x - w, y: a.y - h, rotation: gsap.getProperty(demoPiece, 'rotation'), opacity: 0 })
+        .to(ghost, { opacity: 1, duration: 0.4 })
+        .to(ghost, { x: b.x - w, y: b.y - h, rotation: 0, duration: 1.4, ease: 'power3.inOut' })
+        .to(ghost, { opacity: 0, duration: 0.5 }, '+=0.35');
+    };
+    const stopDemo = () => {
+      learned = true;
+      demo && demo.kill();
+      demo = null;
+      gsap.to(ghost, { opacity: 0, duration: 0.3 });
+      demoSlot.classList.remove('is-target');
+    };
+    if (window.ScrollTrigger) ScrollTrigger.create({ trigger: stage, start: 'top 65%', once: true, onEnter: () => setTimeout(startDemo, 1600) });
+    addEventListener('resize', () => {
+      if (!demo) return;
+      demo.kill();
+      demo = null;
+      startDemo();
+    });
+
     const place = (piece, slot) => {
+      hint.classList.add('is-off');
       piece._slot = slot;
       slot.classList.add('is-filled');
       piece.classList.add('is-placed');
@@ -131,7 +188,7 @@
         .timeline()
         .to(pieces, { backgroundColor: '#C1FF04', color: '#090F06', duration: 0.25, stagger: 0.07 })
         .to(pieces, { backgroundColor: '#29A869', color: '#FDFFFE', duration: 0.4, stagger: 0.07 })
-        .fromTo(board, { scale: 1 }, { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.inOut' }, 0)
+        .fromTo(board, { scale: 1 }, { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 0)
         .to(done, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, 0.3);
       burst();
       tag.textContent = 'Complete';
@@ -139,26 +196,19 @@
       text.textContent = 'Research, STAR, network, speed and care. Put together, that is a HuntHire placement.';
     };
 
+    // A calm ripple of brand-coloured rings rather than confetti
     const burst = () => {
       const box = $('[data-confetti]');
       const s = section.getBoundingClientRect();
       const b = center(board);
-      const colors = ['#29A869', '#C1FF04', '#2B484E', '#A0D9CE', '#090F06'];
-      for (let i = 0; i < 36; i++) {
+      ['#29A869', '#C1FF04', '#A0D9CE'].forEach((color, i) => {
         const el = document.createElement('i');
-        el.style.background = colors[i % colors.length];
+        el.style.borderColor = color;
         el.style.left = `${b.x - s.left}px`;
         el.style.top = `${b.y - s.top}px`;
-        if (i % 2) el.style.borderRadius = '50%';
-        if (i % 5 === 0) el.style.width = '30px';
         box.appendChild(el);
-        const angle = Math.random() * Math.PI * 2;
-        const dist = gsap.utils.random(140, 420);
-        gsap
-          .timeline({ onComplete: () => el.remove() })
-          .to(el, { x: Math.cos(angle) * dist, y: Math.sin(angle) * dist - 80, rotation: gsap.utils.random(-360, 360), duration: 1, ease: 'expo.out' })
-          .to(el, { y: '+=180', opacity: 0, duration: 0.8, ease: 'power2.in' }, 0.6);
-      }
+        gsap.fromTo(el, { scale: 0.4, opacity: 0.9 }, { scale: 5, opacity: 0, duration: 2, delay: i * 0.22, ease: 'expo.out', onComplete: () => el.remove() });
+      });
     };
 
     pieces.forEach((piece) => {
@@ -167,6 +217,7 @@
       // Keyboard: Enter/Space places the piece
       piece.addEventListener('click', (e) => {
         if (e.detail !== 0 || piece._slot) return;
+        stopDemo();
         const slot = freeSlotFor(piece, false);
         if (slot) place(piece, slot);
       });
@@ -175,9 +226,10 @@
         type: 'x,y',
         zIndexBoost: false,
         onPress() {
+          stopDemo();
           piece.classList.add('is-dragging');
           root.classList.add('is-dragging');
-          gsap.to(piece, { scale: 1.08, rotation: 0, duration: 0.3, ease: 'expo.out' });
+          gsap.to(piece, { scale: 1.05, rotation: 0, duration: 0.4, ease: 'expo.out' });
           showInfo(+piece.dataset.piece);
         },
         onDrag() {
@@ -190,12 +242,13 @@
           slots.forEach((s) => s.classList.remove('is-hot'));
           const slot = freeSlotFor(piece, true);
           if (slot) place(piece, slot);
-          else gsap.to(piece, { x: 0, y: 0, scale: 1, rotation: tilt(), duration: 0.9, ease: 'elastic.out(1, 0.5)' });
+          else gsap.to(piece, { x: 0, y: 0, scale: 1, rotation: tilt(), duration: 1.1, ease: 'expo.out' });
         },
       })[0];
     });
 
     $('[data-game-solve]').addEventListener('click', () => {
+      stopDemo();
       pieces
         .filter((p) => !p._slot)
         .forEach((p, i) => setTimeout(() => !p._slot && place(p, freeSlotFor(p, false)), i * 220));
@@ -208,8 +261,9 @@
         p._drag.enable();
       });
       slots.forEach((s) => s.classList.remove('is-filled'));
-      gsap.to(pieces, { x: 0, y: 0, rotation: tilt, duration: 0.9, ease: 'elastic.out(1, 0.6)', stagger: 0.05 });
+      gsap.to(pieces, { x: 0, y: 0, rotation: tilt, duration: 1.1, ease: 'expo.out', stagger: 0.05 });
       gsap.to(done, { opacity: 0, y: 20, duration: 0.3 });
+      hint.classList.remove('is-off');
       tag.textContent = 'Start here';
       title.textContent = 'Grab any piece';
       text.textContent = 'Each shape stands for one part of how we hunt. Drop it on its outline.';
@@ -219,20 +273,35 @@
     addEventListener('resize', () => pieces.forEach((p) => p._slot && snapTo(p, p._slot, 0)));
   }
 
-  /* ───────── Industries: same five pieces, a new picture per industry ───────── */
-  // [x, y, rotation] in units of a 240×240 box; piece order: sq, ci, bar, ci, sq
-  const LOGO = [[42, 0, 0], [128, 0, 0], [42, 86, 0], [42, 170, 0], [132, 174, 0]];
+  /* ───────── Industries: same five pieces, a new picture per industry ─────────
+     Every picture uses the logo's own grid so they stay consistent: two columns and three rows
+     inside a 240×240 box, the bar always lies flat across one full row, the other four pieces
+     fill the remaining two rows, and gaps match the logo (≈20 units). No rotation, nothing
+     touches the edges, and the composition is always centred like the logo itself. */
+  // Pieces align to the outer edges exactly like the Puzzle mark: left column flush left (x 42),
+  // right column flush right (x 198), top row flush top, bottom row flush bottom, middle row centred.
+  const SIZE = [[66, 66], [70, 70], [156, 68], [70, 70], [66, 66]]; // sq, ci, bar, ci, sq
+  const BAR_ROW = { t: 0, m: 1, b: 2 };
+  const xAt = (col, w) => (col === 'L' ? 42 : 198 - w);
+  const yAt = (row, h) => [0, 120 - h / 2, 240 - h][row];
+  // picture(bar row, cell of sq0, ci1, ci3, sq4) — "a"/"b" = upper/lower free row, L/R = column
+  const picture = (bar, sq0, ci1, ci3, sq4) => {
+    const free = [0, 1, 2].filter((r) => r !== BAR_ROW[bar]);
+    const place = (cell, i) => [xAt(cell[1], SIZE[i][0]), yAt(free[cell[0] === 'a' ? 0 : 1], SIZE[i][1])];
+    return [place(sq0, 0), place(ci1, 1), [42, yAt(BAR_ROW[bar], 68)], place(ci3, 3), place(sq4, 4)];
+  };
+  const LOGO = picture('m', 'aL', 'aR', 'bL', 'bR');
   const LAYOUTS = [
-    [[20, 160, 0], [96, 156, 0], [42, 70, 0], [170, 156, 0], [150, 0, 45]], // FMCG — a stocked shelf
-    [[87, 0, 0], [85, 74, 0], [42, 160, 0], [10, 74, 0], [160, 74, 0]], // FSI — a pillar
-    [[0, 170, 0], [170, 20, 0], [42, 86, -20], [90, 170, 0], [170, 170, 0]], // Manufacturers
-    [[20, 20, 45], [150, 20, 0], [42, 110, 0], [20, 170, 0], [150, 170, 45]], // Digital Banks
-    [[87, 30, 45], [20, 150, 0], [42, 90, 90], [150, 150, 0], [87, 174, 0]], // Financial Tech
-    [[87, 174, 0], [85, 90, 0], [42, 20, 0], [10, 90, 0], [160, 90, 0]], // Telco — a tower
-    [[0, 0, 0], [85, 85, 0], [42, 170, 0], [170, 0, 0], [87, 0, 45]], // Renewable Energy
-    [[87, 87, 45], [10, 10, 0], [42, 170, 0], [160, 10, 0], [150, 87, 0]], // Pharmaceutical
-    [[87, 20, 0], [20, 90, 0], [42, 90, 90], [150, 90, 0], [87, 160, 0]], // Health — a cross
-    [[20, 100, 0], [150, 10, 0], [42, 170, 0], [20, 10, 0], [160, 100, 30]], // Tobacco
+    picture('b', 'aL', 'aR', 'bL', 'bR'), // FMCG — goods resting on a shelf
+    picture('m', 'bL', 'aL', 'aR', 'bR'), // FSI — a balance: circles above the beam, squares below
+    picture('t', 'aL', 'bL', 'bR', 'aR'), // Manufacturers — a roof over two floors
+    picture('b', 'aR', 'aL', 'bR', 'bL'), // Digital Banks
+    picture('t', 'aR', 'aL', 'bR', 'bL'), // Financial Tech
+    picture('m', 'aR', 'aL', 'bR', 'bL'), // Telco
+    picture('b', 'bL', 'aL', 'aR', 'bR'), // Renewable Energy — two suns above the horizon
+    picture('t', 'aL', 'aR', 'bL', 'bR'), // Pharmaceutical
+    picture('m', 'aL', 'bL', 'bR', 'aR'), // Health
+    picture('b', 'aL', 'aR', 'bR', 'bL'), // Tobacco
   ];
 
   function industries() {
@@ -248,12 +317,12 @@
         gsap[instant ? 'set' : 'to'](el, {
           x: layout[i][0] * k,
           y: layout[i][1] * k,
-          rotation: layout[i][2],
+          rotation: 0,
           backgroundColor: i === accent ? '#C1FF04' : '#29A869',
-          duration: reduced || instant ? 0 : 0.9,
-          delay: reduced || instant ? 0 : i * 0.035,
-          ease: 'expo.out',
-          overwrite: true,
+          duration: reduced || instant ? 0 : 0.85,
+          delay: reduced || instant ? 0 : i * 0.04,
+          ease: 'power3.inOut',
+          overwrite: 'auto',
         });
       });
     };
@@ -292,8 +361,8 @@
 
     const tl = gsap
       .timeline({ paused: true, onReverseComplete: () => nav.classList.remove('is-open') })
-      .to($$('.menu__panels i', nav), { scaleY: 1, duration: 0.7, ease: 'expo.inOut', stagger: { each: 0.06, from: 'center' } })
-      .from($$('.menu__link span', nav), { yPercent: 110, duration: 0.8, ease: 'expo.out', stagger: 0.035 }, '-=0.25')
+      .to($$('.menu__panels i', nav), { scaleY: 1, duration: 0.9, ease: 'expo.inOut', stagger: { each: 0.05, from: 'center' } })
+      .from($$('.menu__link span', nav), { yPercent: 110, duration: 1, ease: 'expo.out', stagger: 0.035 }, '-=0.3')
       .from($$('.menu__label, .menu__foot', nav), { opacity: 0, y: 10, duration: 0.5 }, '<');
 
     let open = false;
@@ -303,6 +372,7 @@
       nav.setAttribute('aria-hidden', !open);
       label.textContent = open ? 'Close' : 'Menu';
       document.body.classList.toggle('menu-open', open);
+      $('[data-header]').classList.remove('is-hidden');
       if (open) {
         nav.classList.add('is-open');
         tl.timeScale(1).play();
@@ -327,11 +397,13 @@
       const flood = $('[data-intro-flood]');
       const client = $('.side--client');
       const rect = (node) => node.getBoundingClientRect();
+      const countEl = $('[data-intro-count]', el);
+      const count = { v: 0 };
 
       gsap
         .timeline({ onComplete: () => { el.remove(); resolve(); } })
-        .from(pieces, { y: -700, rotation: () => gsap.utils.random(-120, 120), duration: 1, ease: 'bounce.out', stagger: 0.1 })
-        .to(pieces, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1, stagger: 0.04, ease: 'power2.out' })
+        .to(count, { v: 100, duration: 2.1, ease: 'power2.inOut', onUpdate: () => (countEl.textContent = Math.round(count.v)) }, 0)
+        .from(pieces, { y: 36, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: 0.09 }, 0.1)
         .fromTo($('[data-intro-word]', el), { clipPath: 'inset(0% 100% 0% 0%)', x: -16 }, { clipPath: 'inset(0% 0% 0% 0%)', x: 0, duration: 0.9, ease: 'expo.out' }, '-=0.3')
         .from($('[data-intro-tag]', el), { opacity: 0, y: 10, duration: 0.6 }, '<0.2')
         .set(flood, {
@@ -342,13 +414,14 @@
           opacity: 1,
         }, '+=0.25')
         .to(flood, { left: 0, top: 0, width: () => innerWidth, height: () => innerHeight, duration: 0.85, ease: 'expo.inOut' })
-        .set([$('.intro__logo', el), $('[data-intro-tag]', el)], { opacity: 0 })
+        .set([$('.intro__logo', el), $('[data-intro-tag]', el), countEl], { opacity: 0 })
         .set(el, { backgroundColor: 'transparent' })
         .to(flood, {
           left: () => rect(client).left,
           top: () => rect(client).top,
           width: () => rect(client).width,
           height: () => rect(client).height,
+          backgroundColor: '#C1FF04', // the Jade flood settles into the Lime "For companies" panel
           duration: 0.85,
           ease: 'expo.inOut',
         });
@@ -399,26 +472,58 @@
 
     // Scroll: the two audiences pull apart, the mark explodes, the statement fills in
     const words = SplitText.create(statement, { type: 'words', wordsClass: 'word' }).words;
-    const fly = [[-420, -260, -160], [380, -300, 200], [-520, 60, 90], [-300, 320, -220], [460, 280, 180]];
+    // Master Piece shapes start scattered around the stage and gather into the finished picture
+    const shapes = $$('.mp');
+    const scatter = shapes.map((_, i) => {
+      const a = i * 2.39996; // golden-angle spread so no two shapes share a direction
+      const r = 420 + (i % 4) * 90;
+      return [Math.cos(a) * r, Math.sin(a) * r * 0.7, ((i * 37) % 70) - 35];
+    });
+    const fly = [[-420, -260, -20], [380, -300, 16], [-520, 60, 8], [-300, 320, -18], [460, 280, 14]];
     gsap
       .timeline({ scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: 0.7 } })
       .to(client, { xPercent: -100, ease: 'power2.in', duration: 1 }, 0)
       .to(talent, { xPercent: 100, ease: 'power2.in', duration: 1 }, 0)
       .to(parts, { x: (i) => fly[i][0], y: (i) => fly[i][1], rotation: (i) => fly[i][2], opacity: 0, ease: 'power2.in', duration: 0.9 }, 0)
       .to('.hero__hint, .hero__meta', { opacity: 0, duration: 0.2 }, 0)
-      .to(words, { color: '#090F06', stagger: 0.08, duration: 0.3, ease: 'none' }, 0.75);
+      .to(words, { color: '#090F06', stagger: 0.08, duration: 0.3, ease: 'none' }, 0.75)
+      .from(shapes, {
+        x: (i) => scatter[i][0],
+        y: (i) => scatter[i][1],
+        rotation: (i) => scatter[i][2],
+        scale: 0.6,
+        opacity: 0,
+        ease: 'power3.out',
+        duration: 0.9,
+        stagger: { each: 0.035, from: 'random' },
+      }, 0.6);
 
-    // Hover: the mark leans toward the audience you point at
-    const grow = (side) =>
-      gsap.to(parts, {
-        scale: (i) => (side === 'client' ? ([0, 2, 3].includes(i) ? 1.08 : 0.88) : [1, 4].includes(i) ? 1.08 : 0.88),
-        duration: 0.6,
+    // Hover: the pieces rearrange on the logo's own grid (same gaps, nothing overlaps) and the
+    // whole mark leans toward the audience you point at.
+    //   For companies → the bar slides to the bottom: a foundation the team is built on
+    //   For talent    → the bar rises to the top: the role the candidate grows into
+    // Offsets are in SVG units relative to each piece's place in the logo (sq, ci, bar, ci, sq).
+    const HERO_SHIFT = {
+      client: [[0, 0], [0, 0], [0, 86], [0, -85], [0, -87]],
+      talent: [[0, 87], [0, 85], [0, -86], [0, 0], [0, 0]],
+      none: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+    };
+    const lean = $('[data-hero-lean]');
+    const wraps = $$('.hpw', mark);
+    const leanTo = (side) => {
+      const shift = HERO_SHIFT[side || 'none'];
+      gsap.to(wraps, { x: (i) => shift[i][0], y: (i) => shift[i][1], duration: 0.9, ease: 'power3.inOut', stagger: 0.03, overwrite: 'auto' });
+      gsap.to(lean, {
+        x: side === 'client' ? -8 : side === 'talent' ? 8 : 0,
+        transformOrigin: '50% 50%',
+        duration: 1,
         ease: 'expo.out',
         overwrite: 'auto',
       });
-    client.addEventListener('pointerenter', () => grow('client'));
-    talent.addEventListener('pointerenter', () => grow('talent'));
-    $('[data-split-root]').addEventListener('pointerleave', () => gsap.to(parts, { scale: 1, duration: 0.6, ease: 'expo.out' }));
+    };
+    client.addEventListener('pointerenter', () => leanTo('client'));
+    talent.addEventListener('pointerenter', () => leanTo('talent'));
+    $('[data-split-root]').addEventListener('pointerleave', () => leanTo(null));
 
     if (fine) {
       const xTo = gsap.quickTo(mark, 'x', { duration: 1, ease: 'power3.out' });
@@ -438,7 +543,7 @@
       .from('[data-header] > *', { y: -80, duration: 1, ease: 'expo.out', stagger: 0.08 }, 0)
       .to(heroLines, { yPercent: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08 }, 0.05)
       .from('.side__label, .side__text, .side__cta', { opacity: 0, y: 20, duration: 0.9, ease: 'expo.out', stagger: 0.05 }, 0.3)
-      .from(parts, { x: () => gsap.utils.random(-300, 300), y: () => gsap.utils.random(-300, 300), rotation: () => gsap.utils.random(-180, 180), scale: 0, duration: 1.2, ease: 'expo.out', stagger: 0.06 }, 0.1)
+      .from(parts, { y: 40, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.07 }, 0.1)
       .from('.hero__meta, .hero__hint', { opacity: 0, duration: 0.8 }, 0.6);
   }
 
@@ -471,7 +576,7 @@
 
     steps.forEach((step) => {
       const st = { trigger: step, containerAnimation: scroll, start: 'left right', end: 'center center', scrub: true };
-      gsap.fromTo($('.step__shape', step), { rotation: -120, scale: 0.3 }, { rotation: 0, scale: 1, ease: 'none', scrollTrigger: st });
+      gsap.fromTo($('.step__shape', step), { rotation: -30, scale: 0.4, opacity: 0 }, { rotation: 0, scale: 1, opacity: 1, ease: 'none', scrollTrigger: st });
       gsap.from($$('.step__num, h3, p', step), { y: 60, opacity: 0, stagger: 0.1, ease: 'none', scrollTrigger: { ...st, end: 'left 40%' } });
     });
   }
@@ -491,7 +596,7 @@
         onUpdate: () => (el.textContent = Math.round(o.v) + suffix),
       });
     });
-    gsap.from('.stat__shape', { scale: 0, rotation: 90, duration: 1.2, ease: 'back.out(1.6)', stagger: 0.1, clearProps: 'transform', scrollTrigger: { trigger: '[data-numbers]', start: 'top 80%', once: true } });
+    gsap.from('.stat__shape', { scale: 0, duration: 1.4, ease: 'expo.out', stagger: 0.1, clearProps: 'transform', scrollTrigger: { trigger: '[data-numbers]', start: 'top 80%', once: true } });
   }
 
   /* ───────── Cursor (a piece that changes shape) ───────── */
@@ -499,20 +604,26 @@
     if (!fine) return;
     const c = $('[data-cursor]');
     const label = $('[data-cursor-label]');
-    const xTo = gsap.quickTo(c, 'x', { duration: 0.25, ease: 'power3.out' });
-    const yTo = gsap.quickTo(c, 'y', { duration: 0.25, ease: 'power3.out' });
+    const xTo = gsap.quickTo(c, 'x', { duration: 0.35, ease: 'power3.out' });
+    const yTo = gsap.quickTo(c, 'y', { duration: 0.35, ease: 'power3.out' });
     addEventListener('pointermove', (e) => {
       xTo(e.clientX);
       yTo(e.clientY);
     });
+    addEventListener('pointerdown', () => c.classList.add('is-down'));
+    addEventListener('pointerup', () => c.classList.remove('is-down'));
     document.addEventListener('pointerover', (e) => {
       const t = e.target;
+      // Priority: draggable piece → named card ("View", "Read"…) → any other link or button
       const drag = t.closest('[data-piece]:not(.is-placed), .fd');
+      const named = !drag && !t.closest('.hunter__links') && t.closest('[data-cursor-text]');
+      const link = !drag && !named && !t.closest('.insight') && t.closest('a, button');
+      // Labelled disc; white where the background is already Lime (hero "For companies" panel)
+      c.classList.toggle('is-white', !!named && named.dataset.cursorTone === 'white');
       c.classList.toggle('is-drag', !!drag);
-      label.textContent = drag ? 'Drag' : '';
-      c.classList.toggle('is-square', !drag && !!t.closest('[data-cursor-type="square"]'));
-      c.classList.toggle('is-link', !drag && !t.closest('[data-cursor-type="square"]') && !!t.closest('a, button'));
-      c.classList.toggle('is-hidden', !!t.closest('.insight'));
+      c.classList.toggle('is-label', !!named);
+      c.classList.toggle('is-link', !!link);
+      label.textContent = drag ? 'Drag' : named ? named.dataset.cursorText : '';
     });
     document.addEventListener('pointerleave', () => c.classList.add('is-hidden'));
     document.addEventListener('pointerenter', () => c.classList.remove('is-hidden'));
@@ -521,26 +632,17 @@
   function magnetic() {
     if (!fine) return;
     $$('[data-magnetic]').forEach((el) => {
-      const xTo = gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out' });
-      const yTo = gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out' });
+      const xTo = gsap.quickTo(el, 'x', { duration: 0.8, ease: 'power3.out' });
+      const yTo = gsap.quickTo(el, 'y', { duration: 0.8, ease: 'power3.out' });
       el.addEventListener('pointermove', (e) => {
         const r = el.getBoundingClientRect();
-        xTo((e.clientX - r.left - r.width / 2) * 0.3);
-        yTo((e.clientY - r.top - r.height / 2) * 0.3);
+        xTo((e.clientX - r.left - r.width / 2) * 0.18);
+        yTo((e.clientY - r.top - r.height / 2) * 0.22);
       });
       el.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
     });
   }
 
-  /* ───────── Header logo: pieces scatter on hover, click back together ───────── */
-  function logoHover() {
-    const logo = $('[data-logo]');
-    const parts = $$('.lp', logo);
-    logo.addEventListener('pointerenter', () =>
-      gsap.to(parts, { x: () => gsap.utils.random(-50, 50), y: () => gsap.utils.random(-50, 50), rotation: () => gsap.utils.random(-90, 90), duration: 0.5, ease: 'expo.out', stagger: 0.02 })
-    );
-    logo.addEventListener('pointerleave', () => gsap.to(parts, { x: 0, y: 0, rotation: 0, duration: 0.9, ease: 'elastic.out(1, 0.5)', stagger: 0.03 }));
-  }
 
   /* ───────── Insights: shape-masked preview follows the cursor ───────── */
   function insights() {
@@ -548,24 +650,29 @@
     const list = $('[data-insight-list]');
     const prev = $('[data-preview]');
     const img = $('[data-preview-img]');
-    const xTo = gsap.quickTo(prev, 'x', { duration: 0.5, ease: 'power3.out' });
-    const yTo = gsap.quickTo(prev, 'y', { duration: 0.5, ease: 'power3.out' });
-    const rTo = gsap.quickTo(prev, 'rotation', { duration: 0.6, ease: 'power3.out' });
-    let lastX = 0;
+    // The preview trails the cursor down and to the right, so the title under the pointer stays readable
+    const xTo = gsap.quickTo(prev, 'x', { duration: 0.6, ease: 'power3.out' });
+    const yTo = gsap.quickTo(prev, 'y', { duration: 0.6, ease: 'power3.out' });
+    let open = false;
 
     list.addEventListener('pointermove', (e) => {
       xTo(e.clientX);
       yTo(e.clientY);
-      rTo(gsap.utils.clamp(-12, 12, (e.clientX - lastX) * 0.8));
-      lastX = e.clientX;
     });
-    const hide = () => gsap.to(prev, { clipPath: 'circle(0% at 50% 50%)', duration: 0.5, ease: 'expo.out' });
-    $$('a', list).forEach((a, i) =>
+    const hide = () => {
+      open = false;
+      gsap.to(prev, { clipPath: 'inset(0% 0% 100% 0% round 12px)', duration: 0.5, ease: 'expo.out' });
+    };
+    $$('a', list).forEach((a) =>
       a.addEventListener('pointerenter', (e) => {
-        if (!prev.style.clipPath || prev.style.clipPath.startsWith('circle(0')) gsap.set(prev, { x: e.clientX, y: e.clientY });
+        if (!open) gsap.set(prev, { x: e.clientX, y: e.clientY });
+        open = true;
         img.src = a.dataset.img;
-        gsap.to(prev, { clipPath: 'circle(75% at 50% 50%)', borderRadius: i % 2 ? '50%' : '0%', duration: 0.6, ease: 'expo.out' });
+        gsap.to(prev, { clipPath: 'inset(0% 0% 0% 0% round 12px)', duration: 0.7, ease: 'expo.out' });
+        // Black & white first, then it blooms into colour
+        gsap.set(img, { filter: 'grayscale(1)' });
         gsap.fromTo(img, { scale: 1.3 }, { scale: 1, duration: 0.8, ease: 'expo.out' });
+        gsap.to(img, { filter: 'grayscale(0)', duration: 1.2, delay: 0.25, ease: 'power2.out' });
       })
     );
     list.addEventListener('pointerleave', hide);
@@ -602,7 +709,7 @@
         }
       }
       if (!fine) {
-        gsap.to(box.children, { scale: 1.8, opacity: 0.35, duration: 0.8, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: { grid: [rows, cols], from: 'center', each: 0.06 } });
+        gsap.to(box.children, { scale: 1.35, opacity: 0.22, duration: 1.2, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: { grid: [rows, cols], from: 'center', each: 0.08 } });
       }
     };
 
@@ -630,50 +737,347 @@
     sec.addEventListener('pointerleave', () => dots.forEach((d) => { d.s(1); d.o(0.12); d.rot(0); }));
   }
 
-  /* ───────── Footer: pieces drop into a pile you can toss around ───────── */
+  /* ───────── Footer: 15 Puzzle pieces with real physics (Matter.js) ─────────
+     The pieces drop into a tidy arrangement on top of the wordmark:
+       wide screens → one straight row;
+       narrow screens → two stable tiers (bars and squares below, circles resting on the squares).
+     Grab any piece and throw it: it keeps its momentum, spins, bounces, rolls and stacks. */
+  const SET = ['sq', 'ci', 'bar', 'ci', 'sq'];
+  const UNIT = { sq: [66, 66], ci: [70, 70], bar: [156, 68] }; // the Puzzle mark's own proportions
+
   function footer() {
     const drop = $('[data-drop]');
+    const word = $('[data-footer-word]');
+
+    // The wordmark rises as one block (per-letter staggering looked broken mid-way)
+    gsap.from(word, { yPercent: 35, opacity: 0, duration: 1.6, ease: 'expo.out', scrollTrigger: { trigger: word, start: 'top 98%', once: true } });
+
+    const types = Array.from({ length: 15 }, (_, i) => SET[i % SET.length]);
+    drop.innerHTML = types.map((t) => `<i class="fd fd--${t}"></i>`).join('');
     const parts = $$('.fd', drop);
-    parts.forEach((p, i) => (p.style.left = `${4 + i * 9.2 + gsap.utils.random(-2, 2)}%`));
+    const paint = (el, x, y, w, h, angle) => (el.style.transform = `translate3d(${x - w / 2}px, ${y - h / 2}px, 0) rotate(${angle}rad)`);
 
-    gsap.fromTo(
-      parts,
-      { y: -500, rotation: () => gsap.utils.random(-180, 180) },
-      { y: 0, rotation: () => gsap.utils.random(-25, 25), duration: 1.4, ease: 'bounce.out', stagger: 0.08, scrollTrigger: { trigger: drop, start: 'top 90%', once: true } }
-    );
+    if (!window.Matter) {
+      drop.classList.add('is-static');
+      parts.forEach((el) => el.classList.add('is-live'));
+      return;
+    }
 
-    Draggable.create(parts, {
-      type: 'x,y',
-      bounds: $('[data-footer]'),
-      onPress() { gsap.to(this.target, { scale: 1.1, duration: 0.2 }); },
-      onRelease() { gsap.to(this.target, { y: 0, scale: 1, rotation: gsap.utils.random(-30, 30), duration: 1.2, ease: 'bounce.out' }); },
+    // Work out a tidy resting place for every piece: [{ i, x, y, w, h, tier }]
+    const plan = () => {
+      const W = drop.clientWidth;
+      const H = drop.clientHeight;
+      const n = types.length;
+      const rowUnits = types.reduce((a, t) => a + UNIT[t][0], 0);
+      const gap = 12;
+      const kRow = Math.min(0.86, (W * 0.96 - gap * (n - 1)) / rowUnits);
+      const spots = [];
+      if (kRow >= 0.5) {
+        // One straight row, centred
+        let x = (W - (rowUnits * kRow + gap * (n - 1))) / 2;
+        types.forEach((t, i) => {
+          const [w, h] = UNIT[t].map((v) => v * kRow);
+          spots.push({ i, x: x + w / 2, y: H - h / 2, w, h, tier: 0, k: kRow });
+          x += w + gap;
+        });
+        return { k: kRow, spots };
+      }
+      // Two tiers: rectangles on the floor (square · bar · square, three times), circles on the squares
+      const rects = types.map((t, i) => ({ t, i })).filter((p) => p.t !== 'ci');
+      const order = [...rects.filter((p) => p.t === 'sq'), ...rects.filter((p) => p.t === 'bar')];
+      const bottom = [0, 1, 2].flatMap((g) => [order[g * 2], order[6 + g], order[g * 2 + 1]]); // sq bar sq ×3
+      const g2 = 6;
+      const bottomUnits = bottom.reduce((a, p) => a + UNIT[p.t][0], 0);
+      const k = Math.min(0.6, (W * 0.97 - g2 * (bottom.length - 1)) / bottomUnits);
+      let x = (W - (bottomUnits * k + g2 * (bottom.length - 1))) / 2;
+      const squareTops = [];
+      bottom.forEach((p) => {
+        const [w, h] = UNIT[p.t].map((v) => v * k);
+        spots.push({ i: p.i, x: x + w / 2, y: H - h / 2, w, h, tier: 0, k });
+        if (p.t === 'sq') squareTops.push({ x: x + w / 2, top: H - h });
+        x += w + g2;
+      });
+      const circles = types.map((t, i) => ({ t, i })).filter((p) => p.t === 'ci');
+      circles.forEach((p, n2) => {
+        const d = UNIT.ci[0] * k;
+        const base = squareTops[n2];
+        spots.push({ i: p.i, x: base.x, y: base.top - d / 2, w: d, h: d, tier: 1, k });
+      });
+      return { k, spots };
+    };
+
+    const { Engine, Bodies, Body, Composite, Constraint } = Matter;
+    // No sleeping: a sleeping piece would hang in mid-air when the piece under it is pulled away
+    const engine = Engine.create({ enableSleeping: false });
+    engine.gravity.y = 1.15;
+    const MATERIAL = { restitution: 0.32, friction: 0.4, frictionStatic: 0.8, frictionAir: 0.014, density: 0.0018 };
+    let bodies = [];
+    let lastWidth = 0;
+
+    // (Re)build the stage. fromAbove: pieces fall in one after another; otherwise they start at rest.
+    const build = (fromAbove) => {
+      Composite.clear(engine.world, false);
+      const W = drop.clientWidth;
+      const H = drop.clientHeight;
+      const T = 400;
+      lastWidth = W;
+      Composite.add(engine.world, [
+        Bodies.rectangle(W / 2, H + T / 2, W + T * 2, T, { isStatic: true, friction: 0.7 }),
+        Bodies.rectangle(-T / 2, H / 2, T, H * 3, { isStatic: true }),
+        Bodies.rectangle(W + T / 2, H / 2, T, H * 3, { isStatic: true }),
+        Bodies.rectangle(W / 2, -T / 2, W + T * 2, T, { isStatic: true }),
+      ]);
+      const { k, spots } = plan();
+      drop.style.setProperty('--k', k.toFixed(4));
+      bodies = [];
+      spots
+        .sort((a, b) => a.tier - b.tier || a.x - b.x)
+        .forEach((s, n) => {
+          const el = parts[s.i];
+          const body = types[s.i] === 'ci'
+            ? Bodies.circle(s.x, s.y, s.w / 2, MATERIAL)
+            : Bodies.rectangle(s.x, s.y, s.w, s.h, { ...MATERIAL, chamfer: { radius: 1 } });
+          body.el = el;
+          body.size = [s.w, s.h];
+          bodies[s.i] = body;
+          if (!fromAbove) {
+            Composite.add(engine.world, body);
+            el.classList.add('is-live');
+            paint(el, s.x, s.y, s.w, s.h, 0);
+            return;
+          }
+          // Drop straight down above its spot: lower tier first, circles once the squares have landed
+          el.classList.remove('is-live');
+          setTimeout(() => {
+            Body.setPosition(body, { x: s.x, y: s.h / 2 + 2 });
+            Composite.add(engine.world, body);
+            el.classList.add('is-live');
+          }, s.tier * 700 + n * 45);
+        });
+    };
+
+    // Drag & throw: a soft spring pulls the grabbed point toward the pointer
+    let grab = null;
+    const local = (e) => {
+      const r = drop.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    parts.forEach((el, i) => {
+      el.addEventListener('pointerdown', (e) => {
+        const body = bodies[i];
+        if (!body || !Composite.get(engine.world, body.id, 'body')) return;
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        const p = local(e);
+        grab = {
+          el,
+          id: e.pointerId,
+          c: Constraint.create({
+            pointA: p,
+            bodyB: body,
+            pointB: { x: p.x - body.position.x, y: p.y - body.position.y },
+            angleB: body.angle,
+            stiffness: 0.16,
+            damping: 0.12,
+            length: 0,
+          }),
+        };
+        Composite.add(engine.world, grab.c);
+        el.classList.add('is-grabbed');
+      });
+      el.addEventListener('pointermove', (e) => grab && grab.id === e.pointerId && (grab.c.pointA = local(e)));
+      const release = (e) => {
+        if (!grab || grab.id !== e.pointerId) return;
+        Composite.remove(engine.world, grab.c);
+        grab.el.classList.remove('is-grabbed');
+        grab = null;
+      };
+      el.addEventListener('pointerup', release);
+      el.addEventListener('pointercancel', release);
+      el.addEventListener('lostpointercapture', release);
     });
 
-    const word = $('[data-footer-word]');
-    const chars = SplitText.create(word, { type: 'chars', charsClass: 'char' }).chars;
-    gsap.from(chars, { yPercent: 100, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.05, scrollTrigger: { trigger: word, start: 'top 95%', once: true } });
-    chars.forEach((ch) =>
-      ch.addEventListener('pointerenter', () => gsap.fromTo(ch, { yPercent: 0 }, { yPercent: -18, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.out', color: '#C1FF04' }))
-    );
+    // Step the simulation only while the footer is on screen
+    let visible = false;
+    let running = false;
+    let dropped = false;
+    let last = 0;
+    const tick = (now) => {
+      if (!visible) { running = false; return; }
+      const dt = Math.min(1000 / 50, now - (last || now));
+      last = now;
+      Engine.update(engine, dt || 1000 / 60);
+      bodies.forEach((b) => {
+        if (!b) return;
+        if (b.speed > 38) Body.setVelocity(b, { x: b.velocity.x * 0.9, y: b.velocity.y * 0.9 }); // no tunnelling
+        paint(b.el, b.position.x, b.position.y, b.size[0], b.size[1], b.angle);
+      });
+      requestAnimationFrame(tick);
+    };
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (!visible) return;
+      if (!dropped) { dropped = true; build(true); }
+      if (!running) { running = true; last = 0; requestAnimationFrame(tick); }
+    }, { threshold: 0.2 }).observe(drop);
+
+    // A real width change (rotation, window resize) re-tidies the pieces; mobile URL-bar jitter does not
+    let t;
+    addEventListener('resize', () => {
+      clearTimeout(t);
+      t = setTimeout(() => dropped && Math.abs(drop.clientWidth - lastWidth) > 30 && build(false), 200);
+    });
   }
 
   /* ───────── Generic reveals ───────── */
   function reveals() {
     gsap.from('.hunter__mask', {
-      scale: 0, rotation: (i) => (i % 2 ? -30 : 30), duration: 1.1, ease: 'back.out(1.6)', stagger: 0.07, clearProps: 'transform',
+      clipPath: 'inset(100% 0% 0% 0%)', duration: 1.4, ease: 'expo.out', stagger: 0.07, clearProps: 'clipPath',
       scrollTrigger: { trigger: '[data-hunter-grid]', start: 'top 80%', once: true },
+    });
+    gsap.from('.hunter__mask img', { scale: 1.25, duration: 1.8, ease: 'expo.out', stagger: 0.07, clearProps: 'transform', scrollTrigger: { trigger: '[data-hunter-grid]', start: 'top 80%', once: true } });
+    gsap.from('.hunter h4, .hunter p, .hunter__links', { y: 16, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.03, scrollTrigger: { trigger: '[data-hunter-grid]', start: 'top 75%', once: true } });
+    // Supporting copy rises gently once its section is in view
+    ScrollTrigger.batch('.eyebrow, .game__lead, .game__info, .game__actions, .industries__caption, .hunters__head .btn, .insights__head .link-arrow, .footer__col, .footer__bottom', {
+      start: 'top 90%',
+      once: true,
+      onEnter: (els) => gsap.from(els, { y: 24, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.06 }),
     });
     gsap.from('.insight', { y: 40, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-insight-list]', start: 'top 85%', once: true } });
     gsap.from('.acc__item', { y: 40, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-acc]', start: 'top 85%', once: true } });
-    gsap.from('.slot', { scale: 0, opacity: 0, duration: 0.8, ease: 'back.out(2)', stagger: 0.06, scrollTrigger: { trigger: '[data-board]', start: 'top 80%', once: true } });
-    gsap.from('[data-piece]', { y: -260, opacity: 0, duration: 1.2, ease: 'bounce.out', stagger: 0.08, scrollTrigger: { trigger: '[data-tray]', start: 'top 80%', once: true } });
-    gsap.from('.ar', { scale: 0, duration: 1, ease: 'back.out(2)', stagger: 0.06, scrollTrigger: { trigger: '[data-arrange]', start: 'top 80%', once: true } });
-    gsap.from('.services__mask', { clipPath: 'inset(50% 50% 50% 50%)', duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: '.services__mask', start: 'top 80%', once: true } });
+    gsap.from('.slot', { scale: 0.85, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.06, scrollTrigger: { trigger: '[data-board]', start: 'top 80%', once: true } });
+    gsap.from('[data-piece]', { y: 60, opacity: 0, duration: 1.3, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-tray]', start: 'top 80%', once: true } });
+    // Reveal the box, not the pieces: the pieces' tweens belong to the industry hover and must not cancel this
+    gsap.from('[data-arrange]', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', scrollTrigger: { trigger: '[data-arrange]', start: 'top 80%', once: true } });
+    gsap.fromTo('.services__mask', { clipPath: 'inset(50% 50% 50% 50% round 16px)' }, { clipPath: 'inset(0% 0% 0% 0% round 16px)', duration: 1.4, ease: 'expo.out', clearProps: 'clipPath', scrollTrigger: { trigger: '.services__mask', start: 'top 80%', once: true } });
+  }
+
+  /* ───────── Stats slider: on phones the four figures become a swipeable row with dots ───────── */
+  function statsSlider() {
+    const track = $('[data-numbers]');
+    const stats = $$('.stat', track);
+    const dots = document.createElement('div');
+    dots.className = 'numbers__dots';
+    dots.setAttribute('aria-label', 'Key figures');
+    dots.innerHTML = stats.map((_, i) => `<button type="button" aria-label="Show figure ${i + 1} of ${stats.length}"${i ? '' : ' aria-current="true"'}></button>`).join('');
+    track.after(dots);
+    const buttons = $$('button', dots);
+    buttons.forEach((b, i) =>
+      b.addEventListener('click', () => track.scrollTo({ left: stats[i].offsetLeft - stats[0].offsetLeft, behavior: reduced ? 'auto' : 'smooth' }))
+    );
+    let raf = 0;
+    track.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const step = stats[1].offsetLeft - stats[0].offsetLeft;
+        const max = track.scrollWidth - track.clientWidth;
+        const idx = track.scrollLeft >= max - 4 ? stats.length - 1 : Math.round(track.scrollLeft / step);
+        buttons.forEach((b, i) => b.setAttribute('aria-current', i === idx));
+      });
+    }, { passive: true });
+  }
+
+  /* ───────── On-site experience: orientation, progress, smooth hand-offs ───────── */
+  function rollLabels() {
+    // Buttons get a rolling label; aria stays on the original text
+    $$('.btn, .chip').forEach((el) => {
+      if (el.querySelector('.roll') || el.children.length) return;
+      const t = el.textContent.trim();
+      el.innerHTML = `<span class="roll"><span>${t}</span><span aria-hidden="true">${t}</span></span>`;
+    });
+  }
+
+  function lazyFade() {
+    $$('img[loading="lazy"]').forEach((img) => {
+      const done = () => img.classList.add('is-loaded');
+      img.complete && img.naturalWidth ? done() : img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+  }
+
+  function experience() {
+    const header = $('[data-header]');
+    const crumb = $('[data-crumb]');
+    const crumbText = $('[data-crumb-text]');
+    const totop = $('[data-totop]');
+    const ring = $('[data-totop-ring]');
+    const LEN = 138.2;
+    let current = '';
+
+    // Header colour follows the section beneath it (light / dark / lime; split over the hero)
+    const setTheme = (t) => {
+      header.classList.remove('t-dark', 't-split', 't-lime');
+      if (t && t !== 'light') header.classList.add(`t-${t}`);
+    };
+    $$('[data-theme]').forEach((sec) =>
+      ScrollTrigger.create({ trigger: sec, start: 'top 40px', end: 'bottom 40px', onToggle: (st) => st.isActive && setTheme(sec.dataset.theme) })
+    );
+    ScrollTrigger.create({
+      trigger: '[data-hero]',
+      start: 'top top',
+      end: 'bottom 40px',
+      onUpdate: (st) => setTheme(st.progress < 0.4 ? 'split' : 'light'),
+      onEnterBack: (st) => setTheme(st.progress < 0.4 ? 'split' : 'light'),
+    });
+
+    // Header steps aside while reading down, returns the moment you scroll up
+    ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate(self) {
+        const y = self.scroll();
+        const menuOpen = document.body.classList.contains('menu-open');
+        if (!menuOpen) header.classList.toggle('is-hidden', self.direction === 1 && y > innerHeight * 0.9);
+        // On touch screens the button only shows while scrolling back up, so it never sits on content being read
+        totop.classList.toggle('is-on', y > innerHeight && (fine || self.direction === -1));
+        header.classList.toggle('is-solid', y > innerHeight * 1.2);
+        ring.style.strokeDashoffset = (LEN * (1 - self.progress)).toFixed(1);
+      },
+    });
+
+    // The header names the section you are in
+    const setCrumb = (name) => {
+      if (name === current) return;
+      current = name;
+      gsap.to(crumbText, {
+        yPercent: -100, opacity: 0, duration: 0.3, ease: 'power2.in',
+        onComplete() {
+          crumbText.textContent = name;
+          crumb.style.width = name ? `${crumbText.offsetWidth + 6}px` : '0px';
+          gsap.fromTo(crumbText, { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.6, ease: 'expo.out' });
+        },
+      });
+    };
+    $$('[data-section]').forEach((sec) =>
+      ScrollTrigger.create({
+        trigger: sec,
+        start: 'top 50%',
+        end: 'bottom 50%',
+        onToggle: (st) => st.isActive && setCrumb(sec.dataset.section),
+      })
+    );
+    ScrollTrigger.create({ trigger: '[data-hero]', start: 'top top', end: 'bottom 50%', onToggle: (st) => st.isActive && setCrumb('') });
+
+    totop.addEventListener('click', () => (lenis ? lenis.scrollTo(0, { duration: 1.8 }) : scrollTo({ top: 0, behavior: 'smooth' })));
+
+    // Leaving for another page: five columns close over the screen, then navigate
+    const veil = $$('[data-veil] i');
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="http"]');
+      if (!a || a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      gsap.to(veil, { scaleY: 1, duration: 0.7, ease: 'expo.inOut', stagger: { each: 0.05, from: 'center' }, onComplete: () => (location.href = a.href) });
+    });
+    // Coming back via the browser's back button shows the page again
+    addEventListener('pageshow', (e) => e.persisted && gsap.set(veil, { scaleY: 0 }));
   }
 
   /* ───────── Boot ───────── */
   render();
   accordion();
+  rollLabels();
+  statsSlider();
 
   if (!hasGsap) {
     root.classList.remove('js-motion');
@@ -687,13 +1091,17 @@
 
   if (reduced) {
     root.classList.remove('js-motion');
+    // No scroll-driven header theming here: keep the header on its light frosted strip so it always reads
+    const header = $('[data-header]');
+    header.classList.remove('t-split');
+    header.classList.add('is-solid');
     return;
   }
 
   history.scrollRestoration = 'manual';
   scrollTo(0, 0);
   if (window.Lenis) {
-    lenis = new Lenis({ lerp: 0.1 });
+    lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.95 });
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
@@ -706,7 +1114,8 @@
       const target = $(a.getAttribute('href'));
       if (!target) return;
       e.preventDefault();
-      lenis ? lenis.scrollTo(target, { duration: 1.4 }) : target.scrollIntoView({ behavior: 'smooth' });
+      lenis ? lenis.scrollTo(target, { duration: 1.6, easing: (t) => 1 - Math.pow(1 - t, 4) }) : target.scrollIntoView({ behavior: 'smooth' });
+      if (target.hasAttribute('tabindex')) target.focus({ preventScroll: true }); // skip link hands focus to <main>
     })
   );
 
@@ -718,11 +1127,12 @@
       numbers();
       cursor();
       magnetic();
-      logoHover();
       insights();
       field();
       footer();
       reveals();
+      lazyFade();
+      experience();
       return intro();
     })
     .then(() => {

@@ -114,6 +114,15 @@ def build(src_path, out_path):
 
     html = re.sub(r'src="(https://(?:images\.prismic\.io|hunthire\.id)/[^"]+)"', lambda m: f'src="{image_uri(m.group(1))}"', html)
 
+    # Local artwork (e.g. assets/masterpiece/*.webp) is embedded as-is
+    types = {'.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml'}
+
+    def local_image(m):
+        path = base / m.group(1)
+        return f'src="{data_uri(path.read_bytes(), types[path.suffix.lower()])}"'
+
+    html = re.sub(r'src="((?!https?:|data:)[^"]+\.(?:webp|png|jpe?g|svg))"', local_image, html)
+
     Path(out_path).write_text(html)
     left = re.findall(r'(?:src|href)="https?://[^"]+\.(?:js|css|png|jpe?g|webp)[^"]*"', html)
     print(f'{out_path}: {len(html) / 1024 / 1024:.2f} MB, external assets left: {len(left)}')
