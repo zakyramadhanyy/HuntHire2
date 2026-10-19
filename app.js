@@ -41,238 +41,6 @@
       .join('');
   }
 
-  /* ───────── Services accordion: one photo per service, the rounded frame never changes ───────── */
-  function accordion() {
-    const items = $$('.acc__item');
-    const photos = $$('[data-service-mask] img');
-    let current = 0;
-
-    // The new photo wipes up over the previous one and settles from a slight zoom
-    const showPhoto = (idx) => {
-      if (idx === current || !photos[idx]) return;
-      photos.forEach((p, i) => {
-        p.classList.toggle('is-prev', i === current);
-        p.classList.toggle('is-active', i === idx);
-      });
-      current = idx;
-      if (!hasGsap || reduced) return;
-      gsap.fromTo(photos[idx], { clipPath: 'inset(100% 0% 0% 0%)', scale: 1.12 }, { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, duration: 1.1, ease: 'expo.out', overwrite: true });
-    };
-
-    const setOpen = (item, open) => {
-      if (item.classList.contains('is-open') === open) return;
-      const panel = $('.acc__panel', item);
-      item.classList.toggle('is-open', open);
-      $('.acc__btn', item).setAttribute('aria-expanded', open);
-      if (!hasGsap) return;
-      if (open) gsap.fromTo(panel, { height: 0 }, { height: 'auto', duration: 0.7, ease: 'expo.out' });
-      else gsap.to(panel, { height: 0, duration: 0.5, ease: 'expo.out' });
-    };
-
-    items.forEach((item, idx) => {
-      $('.acc__btn', item).addEventListener('click', () => {
-        items.forEach((o) => setOpen(o, o === item));
-        showPhoto(idx);
-      });
-    });
-  }
-
-  /* ───────── Puzzle game ───────── */
-  const INFO = [
-    ['Research', 'Conduct in-depth research', 'We study your company and culture and present it as a compelling pitch to high-potential candidates.'],
-    ['STAR', 'Using the STAR approach', 'Pre-screening interviews make sure candidates match at least 70% of your requirements.'],
-    ['Network', 'A network built since 2018', 'We constantly build and maintain a vast talent network across Indonesia and Southeast Asia.'],
-    ['Speed', 'Speed is our secret weapon', 'We are renowned for delivering exceptional candidates with unprecedented agility.'],
-    ['Care', 'Take all the responsibility', 'From first contact to day one, including salary negotiation and support through probation.'],
-  ];
-
-  function game() {
-    const section = $('[data-game]');
-    const board = $('[data-board]');
-    const slots = $$('[data-slot]');
-    const pieces = $$('[data-piece]');
-    const done = $('[data-game-done]');
-    const tag = $('[data-info-tag]');
-    const title = $('[data-info-title]');
-    const text = $('[data-info-text]');
-    const shapeOf = (el) => (el.className.match(/--(sq|ci|bar)/) || [])[1];
-    const center = (el) => {
-      const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    };
-    const tilt = () => gsap.utils.random(-8, 8);
-
-    const showInfo = (id) => {
-      const [t, h, p] = INFO[id];
-      tag.textContent = t;
-      title.textContent = h;
-      text.textContent = p;
-      gsap.fromTo([title, text], { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'expo.out', stagger: 0.05 });
-    };
-
-    const freeSlotFor = (piece, near) => {
-      const free = slots.filter((s) => !s.classList.contains('is-filled') && shapeOf(s) === shapeOf(piece));
-      if (!near) return free.find((s) => s.dataset.slot === piece.dataset.piece) || free[0];
-      const c = center(piece);
-      let best = null;
-      let bestD = Infinity;
-      free.forEach((s) => {
-        const d = Math.hypot(center(s).x - c.x, center(s).y - c.y);
-        if (d < bestD) [best, bestD] = [s, d];
-      });
-      return best && bestD < best.offsetWidth * 0.7 ? best : null;
-    };
-
-    const snapTo = (piece, slot, duration) => {
-      const a = center(piece);
-      const b = center(slot);
-      gsap.to(piece, { x: `+=${b.x - a.x}`, y: `+=${b.y - a.y}`, rotation: 0, scale: 1, duration, ease: 'expo.out' });
-    };
-
-    // Guidance: until the visitor tries, a faint copy of "Network" glides to its outline and the
-    // outline pulses. It stops for good the moment any piece is touched or "Solve it for me" is used.
-    const stage = $('[data-stage]');
-    const ghost = $('[data-ghost]');
-    const hint = $('[data-game-hint]');
-    const demoPiece = pieces.find((p) => p.dataset.piece === '2');
-    const demoSlot = slots[2];
-    let demo = null;
-    let learned = false;
-    const inStage = (el) => {
-      const r = el.getBoundingClientRect();
-      const st = stage.getBoundingClientRect();
-      return { x: r.left - st.left + r.width / 2, y: r.top - st.top + r.height / 2 };
-    };
-    const startDemo = () => {
-      if (learned || demo || reduced || demoPiece._slot) return;
-      const a = inStage(demoPiece);
-      const b = inStage(demoSlot);
-      const w = ghost.offsetWidth / 2;
-      const h = ghost.offsetHeight / 2;
-      demoSlot.classList.add('is-target');
-      demo = gsap
-        .timeline({ repeat: -1, repeatDelay: 1.4 })
-        .set(ghost, { x: a.x - w, y: a.y - h, rotation: gsap.getProperty(demoPiece, 'rotation'), opacity: 0 })
-        .to(ghost, { opacity: 1, duration: 0.4 })
-        .to(ghost, { x: b.x - w, y: b.y - h, rotation: 0, duration: 1.4, ease: 'power3.inOut' })
-        .to(ghost, { opacity: 0, duration: 0.5 }, '+=0.35');
-    };
-    const stopDemo = () => {
-      learned = true;
-      demo && demo.kill();
-      demo = null;
-      gsap.to(ghost, { opacity: 0, duration: 0.3 });
-      demoSlot.classList.remove('is-target');
-    };
-    if (window.ScrollTrigger) ScrollTrigger.create({ trigger: stage, start: 'top 65%', once: true, onEnter: () => setTimeout(startDemo, 1600) });
-    addEventListener('resize', () => {
-      if (!demo) return;
-      demo.kill();
-      demo = null;
-      startDemo();
-    });
-
-    const place = (piece, slot) => {
-      hint.classList.add('is-off');
-      piece._slot = slot;
-      slot.classList.add('is-filled');
-      piece.classList.add('is-placed');
-      piece._drag && piece._drag.disable();
-      snapTo(piece, slot, 0.7);
-      showInfo(+piece.dataset.piece);
-      if (pieces.every((p) => p._slot)) setTimeout(complete, 650);
-    };
-
-    const complete = () => {
-      gsap
-        .timeline()
-        .to(pieces, { backgroundColor: '#C1FF04', color: '#090F06', duration: 0.25, stagger: 0.07 })
-        .to(pieces, { backgroundColor: '#29A869', color: '#FDFFFE', duration: 0.4, stagger: 0.07 })
-        .fromTo(board, { scale: 1 }, { scale: 1.03, duration: 0.4, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 0)
-        .to(done, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, 0.3);
-      burst();
-      tag.textContent = 'Complete';
-      title.textContent = 'Perfect fit.';
-      text.textContent = 'Research, STAR, network, speed and care. Put together, that is a HuntHire placement.';
-    };
-
-    // A calm ripple of brand-coloured rings rather than confetti
-    const burst = () => {
-      const box = $('[data-confetti]');
-      const s = section.getBoundingClientRect();
-      const b = center(board);
-      ['#29A869', '#C1FF04', '#A0D9CE'].forEach((color, i) => {
-        const el = document.createElement('i');
-        el.style.borderColor = color;
-        el.style.left = `${b.x - s.left}px`;
-        el.style.top = `${b.y - s.top}px`;
-        box.appendChild(el);
-        gsap.fromTo(el, { scale: 0.4, opacity: 0.9 }, { scale: 5, opacity: 0, duration: 2, delay: i * 0.22, ease: 'expo.out', onComplete: () => el.remove() });
-      });
-    };
-
-    pieces.forEach((piece) => {
-      gsap.set(piece, { rotation: tilt() });
-      piece.addEventListener('pointerenter', () => !piece._slot && showInfo(+piece.dataset.piece));
-      // Keyboard: Enter/Space places the piece
-      piece.addEventListener('click', (e) => {
-        if (e.detail !== 0 || piece._slot) return;
-        stopDemo();
-        const slot = freeSlotFor(piece, false);
-        if (slot) place(piece, slot);
-      });
-
-      piece._drag = Draggable.create(piece, {
-        type: 'x,y',
-        zIndexBoost: false,
-        onPress() {
-          stopDemo();
-          piece.classList.add('is-dragging');
-          root.classList.add('is-dragging');
-          gsap.to(piece, { scale: 1.05, rotation: 0, duration: 0.4, ease: 'expo.out' });
-          showInfo(+piece.dataset.piece);
-        },
-        onDrag() {
-          const target = freeSlotFor(piece, true);
-          slots.forEach((s) => s.classList.toggle('is-hot', s === target));
-        },
-        onRelease() {
-          piece.classList.remove('is-dragging');
-          root.classList.remove('is-dragging');
-          slots.forEach((s) => s.classList.remove('is-hot'));
-          const slot = freeSlotFor(piece, true);
-          if (slot) place(piece, slot);
-          else gsap.to(piece, { x: 0, y: 0, scale: 1, rotation: tilt(), duration: 1.1, ease: 'expo.out' });
-        },
-      })[0];
-    });
-
-    $('[data-game-solve]').addEventListener('click', () => {
-      stopDemo();
-      pieces
-        .filter((p) => !p._slot)
-        .forEach((p, i) => setTimeout(() => !p._slot && place(p, freeSlotFor(p, false)), i * 220));
-    });
-
-    $('[data-game-reset]').addEventListener('click', () => {
-      pieces.forEach((p) => {
-        p._slot = null;
-        p.classList.remove('is-placed');
-        p._drag.enable();
-      });
-      slots.forEach((s) => s.classList.remove('is-filled'));
-      gsap.to(pieces, { x: 0, y: 0, rotation: tilt, duration: 1.1, ease: 'expo.out', stagger: 0.05 });
-      gsap.to(done, { opacity: 0, y: 20, duration: 0.3 });
-      hint.classList.remove('is-off');
-      tag.textContent = 'Start here';
-      title.textContent = 'Grab any piece';
-      text.textContent = 'Each shape stands for one part of how we hunt. Drop it on its outline.';
-    });
-
-    // Keep placed pieces glued to their slots when the layout changes
-    addEventListener('resize', () => pieces.forEach((p) => p._slot && snapTo(p, p._slot, 0)));
-  }
-
   /* ───────── Industries: same five pieces, a new picture per industry ─────────
      Every picture uses the logo's own grid so they stay consistent: two columns and three rows
      inside a 240×240 box, the bar always lies flat across one full row, the other four pieces
@@ -334,7 +102,7 @@
         caption.textContent = defaultCaption;
       } else {
         arrange(LAYOUTS[idx], idx % 5);
-        caption.textContent = `${items[idx].textContent}: same pieces, new picture.`;
+        caption.textContent = `${$('.row__t', items[idx]).textContent}: same pieces, new picture.`;
       }
     };
 
@@ -388,43 +156,28 @@
     addEventListener('keydown', (e) => e.key === 'Escape' && open && toggle(false));
   }
 
-  /* ───────── Intro: pieces drop, click, the bar floods into the hero ───────── */
+  /* ───────── 1. On boarding: the Master Piece builds up behind the wordmark while the counter runs, then the screen lifts ───────── */
   function intro() {
     return new Promise((resolve) => {
       const el = $('[data-intro]');
-      const pieces = $$('.ip', el);
-      const bar = $('.ip--bar', el);
-      const flood = $('[data-intro-flood]');
-      const client = $('.side--client');
-      const rect = (node) => node.getBoundingClientRect();
+      const pattern = $('[data-intro-pattern]');
+      // Reuse the statement section's Master Piece shapes instead of shipping the artwork twice
+      pattern.innerHTML = $('[data-masterpiece]').innerHTML;
+      const shapes = $$('.mp', pattern);
+      // The statement's scroll animation has already put its own start state on the originals; start the clones clean
+      gsap.set(shapes, { clearProps: 'transform,opacity,translate,rotate,scale' });
       const countEl = $('[data-intro-count]', el);
+      const word = $('[data-intro-word]', el);
       const count = { v: 0 };
+      const LOAD = 2.2;
 
       gsap
         .timeline({ onComplete: () => { el.remove(); resolve(); } })
-        .to(count, { v: 100, duration: 2.1, ease: 'power2.inOut', onUpdate: () => (countEl.textContent = Math.round(count.v)) }, 0)
-        .from(pieces, { y: 36, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: 0.09 }, 0.1)
-        .fromTo($('[data-intro-word]', el), { clipPath: 'inset(0% 100% 0% 0%)', x: -16 }, { clipPath: 'inset(0% 0% 0% 0%)', x: 0, duration: 0.9, ease: 'expo.out' }, '-=0.3')
-        .from($('[data-intro-tag]', el), { opacity: 0, y: 10, duration: 0.6 }, '<0.2')
-        .set(flood, {
-          left: () => rect(bar).left,
-          top: () => rect(bar).top,
-          width: () => rect(bar).width,
-          height: () => rect(bar).height,
-          opacity: 1,
-        }, '+=0.25')
-        .to(flood, { left: 0, top: 0, width: () => innerWidth, height: () => innerHeight, duration: 0.85, ease: 'expo.inOut' })
-        .set([$('.intro__logo', el), $('[data-intro-tag]', el), countEl], { opacity: 0 })
-        .set(el, { backgroundColor: 'transparent' })
-        .to(flood, {
-          left: () => rect(client).left,
-          top: () => rect(client).top,
-          width: () => rect(client).width,
-          height: () => rect(client).height,
-          backgroundColor: '#C1FF04', // the Jade flood settles into the Lime "For companies" panel
-          duration: 0.85,
-          ease: 'expo.inOut',
-        });
+        .to(count, { v: 100, duration: LOAD, ease: 'power2.inOut', onUpdate: () => (countEl.textContent = Math.round(count.v)) }, 0)
+        .fromTo(word, { clipPath: 'inset(0% 100% 0% 0%)', x: -12 }, { clipPath: 'inset(0% 0% 0% 0%)', x: 0, duration: 1, ease: 'expo.out' }, 0.15)
+        .from(shapes, { opacity: 0, scale: 0.85, y: 24, duration: 0.9, ease: 'expo.out', stagger: { each: (LOAD - 0.9) / shapes.length, from: 'random' } }, 0)
+        .to([word, countEl], { opacity: 0, y: -16, duration: 0.5, ease: 'power2.in' }, '+=0.25')
+        .to(el, { clipPath: 'inset(0% 0% 100% 0%)', duration: 0.9, ease: 'expo.inOut' }, '-=0.15');
     });
   }
 
@@ -459,34 +212,53 @@
     });
   }
 
-  /* ───────── Hero ───────── */
-  function hero() {
-    const sec = $('[data-hero]');
-    const client = $('.side--client');
-    const talent = $('.side--talent');
-    const mark = $('[data-hero-mark]');
-    const parts = $$('.hp', mark);
-    const statement = $('[data-hero-statement]');
+  /* ───────── 2. Hero banner (ref-fleava): photo slider with Prev / Next and an autoplay bar ───────── */
+  function heroSlider() {
+    const slides = $$('.slide');
+    const texts = $$('.htext');
+    const bar = $('[data-hero-bar]');
+    const DURATION = 6500;
+    let i = 0;
+    let t0 = performance.now();
+    const show = (n) => {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => s.classList.toggle('is-active', k === i));
+      texts.forEach((t, k) => t.classList.toggle('is-active', k === i));
+      t0 = performance.now();
+    };
+    $('[data-next]').addEventListener('click', () => show(i + 1));
+    $('[data-prev]').addEventListener('click', () => show(i - 1));
+    addEventListener('keydown', (e) => {
+      if (scrollY > innerHeight * 0.5 || document.body.classList.contains('menu-open')) return;
+      if (e.key === 'ArrowRight') show(i + 1);
+      if (e.key === 'ArrowLeft') show(i - 1);
+    });
+    // The first headline waits for the on-boarding to finish before its lines rise
+    texts[0].classList.remove('is-active');
+    const start = () => {
+      show(0);
+      if (reduced || !hasGsap) return;
+      gsap.ticker.add(() => {
+        const progress = (performance.now() - t0) / DURATION;
+        bar.style.transform = `scaleX(${Math.min(1, progress)})`;
+        if (progress >= 1 && scrollY < innerHeight) show(i + 1); // pause while the hero is covered
+      });
+    };
+    return { start };
+  }
 
-    gsap.set(mark, { xPercent: -50, yPercent: -50, x: 0, y: 0 });
-
-    // Scroll: the two audiences pull apart, the mark explodes, the statement fills in
-    const words = SplitText.create(statement, { type: 'words', wordsClass: 'word' }).words;
-    // Master Piece shapes start scattered around the stage and gather into the finished picture
-    const shapes = $$('.mp');
+  /* ───────── 3. Every great team is a puzzle: the statement fills in as the Master Piece assembles ───────── */
+  function statement() {
+    const sec = $('[data-statement]');
+    const words = SplitText.create($('[data-statement-text]'), { type: 'words', wordsClass: 'word' }).words;
+    const shapes = $$('.mp', sec);
     const scatter = shapes.map((_, i) => {
       const a = i * 2.39996; // golden-angle spread so no two shapes share a direction
       const r = 420 + (i % 4) * 90;
       return [Math.cos(a) * r, Math.sin(a) * r * 0.7, ((i * 37) % 70) - 35];
     });
-    const fly = [[-420, -260, -20], [380, -300, 16], [-520, 60, 8], [-300, 320, -18], [460, 280, 14]];
     gsap
-      .timeline({ scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: 0.7 } })
-      .to(client, { xPercent: -100, ease: 'power2.in', duration: 1 }, 0)
-      .to(talent, { xPercent: 100, ease: 'power2.in', duration: 1 }, 0)
-      .to(parts, { x: (i) => fly[i][0], y: (i) => fly[i][1], rotation: (i) => fly[i][2], opacity: 0, ease: 'power2.in', duration: 0.9 }, 0)
-      .to('.hero__hint, .hero__meta', { opacity: 0, duration: 0.2 }, 0)
-      .to(words, { color: '#090F06', stagger: 0.08, duration: 0.3, ease: 'none' }, 0.75)
+      .timeline({ scrollTrigger: { trigger: sec, start: 'top 60%', end: 'bottom bottom', scrub: 0.7 } })
       .from(shapes, {
         x: (i) => scatter[i][0],
         y: (i) => scatter[i][1],
@@ -496,55 +268,29 @@
         ease: 'power3.out',
         duration: 0.9,
         stagger: { each: 0.035, from: 'random' },
-      }, 0.6);
+      }, 0)
+      .to(words, { color: '#090F06', stagger: 0.08, duration: 0.3, ease: 'none' }, 0.35);
+  }
 
-    // Hover: the pieces rearrange on the logo's own grid (same gaps, nothing overlaps) and the
-    // whole mark leans toward the audience you point at.
-    //   For companies → the bar slides to the bottom: a foundation the team is built on
-    //   For talent    → the bar rises to the top: the role the candidate grows into
-    // Offsets are in SVG units relative to each piece's place in the logo (sq, ci, bar, ci, sq).
-    const HERO_SHIFT = {
-      client: [[0, 0], [0, 0], [0, 86], [0, -85], [0, -87]],
-      talent: [[0, 87], [0, 85], [0, -86], [0, 0], [0, 0]],
-      none: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
-    };
-    const lean = $('[data-hero-lean]');
-    const wraps = $$('.hpw', mark);
-    const leanTo = (side) => {
-      const shift = HERO_SHIFT[side || 'none'];
-      gsap.to(wraps, { x: (i) => shift[i][0], y: (i) => shift[i][1], duration: 0.9, ease: 'power3.inOut', stagger: 0.03, overwrite: 'auto' });
-      gsap.to(lean, {
-        x: side === 'client' ? -8 : side === 'talent' ? 8 : 0,
-        transformOrigin: '50% 50%',
-        duration: 1,
-        ease: 'expo.out',
-        overwrite: 'auto',
-      });
-    };
-    client.addEventListener('pointerenter', () => leanTo('client'));
-    talent.addEventListener('pointerenter', () => leanTo('talent'));
-    $('[data-split-root]').addEventListener('pointerleave', () => leanTo(null));
-
-    if (fine) {
-      const xTo = gsap.quickTo(mark, 'x', { duration: 1, ease: 'power3.out' });
-      const yTo = gsap.quickTo(mark, 'y', { duration: 1, ease: 'power3.out' });
-      sec.addEventListener('pointermove', (e) => {
-        xTo((e.clientX / innerWidth - 0.5) * 60);
-        yTo((e.clientY / innerHeight - 0.5) * 40);
-      });
-    }
+  /* ───────── 4–5. The firm & Expertise (ref-fleava): inset photo opens to full bleed, copy dims as it leaves ───────── */
+  function firm() {
+    const sec = $('[data-firm]');
+    gsap.fromTo('[data-firm-media]', { '--p': 0 }, { '--p': 1, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'top 10%', scrub: true } });
+    gsap.fromTo('[data-firm-img]', { yPercent: -10 }, { yPercent: 0, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: true } });
+    $$('[data-fade-out]').forEach((el) =>
+      gsap.to(el, { opacity: 0.1, ease: 'none', scrollTrigger: { trigger: el.closest('section'), start: 'bottom 75%', end: 'bottom 15%', scrub: true } })
+    );
+    // Hero copy drifts up and fades while the next section slides over the hero
+    gsap.to('[data-hero-content]', { y: -120, opacity: 0, ease: 'none', scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true } });
   }
 
   function heroIntro() {
     root.classList.add('intro-done');
-    const parts = $$('.hp');
+    slider.start();
     gsap
       .timeline()
       .from('[data-header] > *', { y: -80, duration: 1, ease: 'expo.out', stagger: 0.08 }, 0)
-      .to(heroLines, { yPercent: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08 }, 0.05)
-      .from('.side__label, .side__text, .side__cta', { opacity: 0, y: 20, duration: 0.9, ease: 'expo.out', stagger: 0.05 }, 0.3)
-      .from(parts, { y: 40, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.07 }, 0.1)
-      .from('.hero__meta, .hero__hint', { opacity: 0, duration: 0.8 }, 0.6);
+      .from('.hero__ctrl, .hero__scroll', { opacity: 0, y: 20, duration: 1, ease: 'expo.out', stagger: 0.08 }, 0.4);
   }
 
   /* ───────── Approach: horizontal scroll ───────── */
@@ -579,24 +325,6 @@
       gsap.fromTo($('.step__shape', step), { rotation: -30, scale: 0.4, opacity: 0 }, { rotation: 0, scale: 1, opacity: 1, ease: 'none', scrollTrigger: st });
       gsap.from($$('.step__num, h3, p', step), { y: 60, opacity: 0, stagger: 0.1, ease: 'none', scrollTrigger: { ...st, end: 'left 40%' } });
     });
-  }
-
-  /* ───────── Numbers ───────── */
-  function numbers() {
-    $$('[data-count]').forEach((el) => {
-      const end = +el.dataset.count;
-      const start = end > 1000 ? 1990 : 0;
-      const suffix = el.dataset.suffix || '';
-      const o = { v: start };
-      gsap.to(o, {
-        v: end,
-        duration: 1.8,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-        onUpdate: () => (el.textContent = Math.round(o.v) + suffix),
-      });
-    });
-    gsap.from('.stat__shape', { scale: 0, duration: 1.4, ease: 'expo.out', stagger: 0.1, clearProps: 'transform', scrollTrigger: { trigger: '[data-numbers]', start: 'top 80%', once: true } });
   }
 
   /* ───────── Cursor (a piece that changes shape) ───────── */
@@ -938,44 +666,19 @@
     gsap.from('.hunter__mask img', { scale: 1.25, duration: 1.8, ease: 'expo.out', stagger: 0.07, clearProps: 'transform', scrollTrigger: { trigger: '[data-hunter-grid]', start: 'top 80%', once: true } });
     gsap.from('.hunter h4, .hunter p, .hunter__links', { y: 16, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.03, scrollTrigger: { trigger: '[data-hunter-grid]', start: 'top 75%', once: true } });
     // Supporting copy rises gently once its section is in view
-    ScrollTrigger.batch('.eyebrow, .game__lead, .game__info, .game__actions, .industries__caption, .hunters__head .btn, .insights__head .link-arrow, .footer__col, .footer__bottom', {
+    ScrollTrigger.batch('.eyebrow, [data-up]:not(.eyebrow), .industries__caption, .hunters__head .btn, .insights__head .link-arrow, .footer__col, .footer__bottom', {
       start: 'top 90%',
       once: true,
       onEnter: (els) => gsap.from(els, { y: 24, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.06 }),
     });
     gsap.from('.insight', { y: 40, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-insight-list]', start: 'top 85%', once: true } });
-    gsap.from('.acc__item', { y: 40, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-acc]', start: 'top 85%', once: true } });
-    gsap.from('.slot', { scale: 0.85, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.06, scrollTrigger: { trigger: '[data-board]', start: 'top 80%', once: true } });
-    gsap.from('[data-piece]', { y: 60, opacity: 0, duration: 1.3, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: '[data-tray]', start: 'top 80%', once: true } });
+    // Rows and the expertise line arrive one item at a time
+    $$('[data-stagger]').forEach((list) =>
+      // Explicit end values, then hand opacity back to CSS (rows dim each other on hover)
+      gsap.fromTo(list.children, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: 'expo.out', stagger: 0.06, clearProps: 'opacity,transform', scrollTrigger: { trigger: list, start: 'top 85%', once: true } })
+    );
     // Reveal the box, not the pieces: the pieces' tweens belong to the industry hover and must not cancel this
     gsap.from('[data-arrange]', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', scrollTrigger: { trigger: '[data-arrange]', start: 'top 80%', once: true } });
-    gsap.fromTo('.services__mask', { clipPath: 'inset(50% 50% 50% 50% round 16px)' }, { clipPath: 'inset(0% 0% 0% 0% round 16px)', duration: 1.4, ease: 'expo.out', clearProps: 'clipPath', scrollTrigger: { trigger: '.services__mask', start: 'top 80%', once: true } });
-  }
-
-  /* ───────── Stats slider: on phones the four figures become a swipeable row with dots ───────── */
-  function statsSlider() {
-    const track = $('[data-numbers]');
-    const stats = $$('.stat', track);
-    const dots = document.createElement('div');
-    dots.className = 'numbers__dots';
-    dots.setAttribute('aria-label', 'Key figures');
-    dots.innerHTML = stats.map((_, i) => `<button type="button" aria-label="Show figure ${i + 1} of ${stats.length}"${i ? '' : ' aria-current="true"'}></button>`).join('');
-    track.after(dots);
-    const buttons = $$('button', dots);
-    buttons.forEach((b, i) =>
-      b.addEventListener('click', () => track.scrollTo({ left: stats[i].offsetLeft - stats[0].offsetLeft, behavior: reduced ? 'auto' : 'smooth' }))
-    );
-    let raf = 0;
-    track.addEventListener('scroll', () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const step = stats[1].offsetLeft - stats[0].offsetLeft;
-        const max = track.scrollWidth - track.clientWidth;
-        const idx = track.scrollLeft >= max - 4 ? stats.length - 1 : Math.round(track.scrollLeft / step);
-        buttons.forEach((b, i) => b.setAttribute('aria-current', i === idx));
-      });
-    }, { passive: true });
   }
 
   /* ───────── On-site experience: orientation, progress, smooth hand-offs ───────── */
@@ -1005,7 +708,7 @@
     const LEN = 138.2;
     let current = '';
 
-    // Header colour follows the section beneath it (light / dark / lime; split over the hero)
+    // Header colour follows the section beneath it (light / dark / lime)
     const setTheme = (t) => {
       header.classList.remove('t-dark', 't-split', 't-lime');
       if (t && t !== 'light') header.classList.add(`t-${t}`);
@@ -1017,8 +720,7 @@
       trigger: '[data-hero]',
       start: 'top top',
       end: 'bottom 40px',
-      onUpdate: (st) => setTheme(st.progress < 0.4 ? 'split' : 'light'),
-      onEnterBack: (st) => setTheme(st.progress < 0.4 ? 'split' : 'light'),
+      onToggle: (st) => st.isActive && setTheme('dark'),
     });
 
     // Header steps aside while reading down, returns the moment you scroll up
@@ -1075,17 +777,16 @@
 
   /* ───────── Boot ───────── */
   render();
-  accordion();
   rollLabels();
-  statsSlider();
+  const slider = heroSlider();
 
   if (!hasGsap) {
     root.classList.remove('js-motion');
+    slider.start();
     return;
   }
   gsap.registerPlugin(ScrollTrigger, SplitText, Draggable);
 
-  game();
   industries();
   menu();
 
@@ -1093,8 +794,9 @@
     root.classList.remove('js-motion');
     // No scroll-driven header theming here: keep the header on its light frosted strip so it always reads
     const header = $('[data-header]');
-    header.classList.remove('t-split');
+    header.classList.remove('t-dark');
     header.classList.add('is-solid');
+    slider.start();
     return;
   }
 
@@ -1122,9 +824,9 @@
   Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))])
     .then(() => {
       lines();
-      hero();
+      statement();
+      firm();
       approach();
-      numbers();
       cursor();
       magnetic();
       insights();

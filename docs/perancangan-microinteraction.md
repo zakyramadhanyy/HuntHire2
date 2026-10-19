@@ -101,3 +101,21 @@ Struktur section dan konsep puzzle tetap sama; yang berubah adalah tampilan visu
 | 2.3.3 Animation from interactions | `prefers-reduced-motion` dihormati; konten lengkap tanpa animasi |
 
 **Catatan perilaku**: potongan puzzle (section "How we work" dan footer) sengaja bisa di-drag, sehingga gesekan jari yang dimulai tepat di atas potongan tidak menggulir halaman; area di sekitarnya tetap bisa di-scroll.
+
+## 9. Struktur baru: index × ref-fleava
+
+Sumber gaya: `docs/ref-fleava.html` (Opsi D yang sudah diretouch brand). Game puzzle "Five pieces" dan statistik dihapus sesuai keputusan klien.
+
+| # | Section | Sumber | Isi & motion |
+|---|---|---|---|
+| 1 | On Boarding | index (layout seperti layar pembuka hunthire.id) | Latar Lime #C1FF04, wordmark Night di tengah, counter kecil 0–100 di bawah tengah; pola Master Piece tone-on-tone (Jade multiply tipis) muncul bentuk demi bentuk selama memuat, lalu layar terangkat membuka hero |
+| 2 | Hero Banner | ref-fleava | Slider 3 foto (Executive Search · For Companies · For Talent), Prev/Next, progress Lime, autoplay 6,5 dtk (berhenti saat tertutup); hero sticky, section berikutnya naik menutupinya |
+| 3 | Every great team is a puzzle | index | Kalimat terisi kata demi kata; Master Piece (8%) menyatu di belakangnya |
+| 4 | The Firm | ref-fleava | Foto duotone Jade dari bingkai inset ke layar penuh. Judul baru: "Built on research, run on speed." (judul ref sama dengan section 3) |
+| 5 | Expertise | ref-fleava | Layanan sebagai satu baris tipografi; link ke section layanan. Tag industri dihapus (ada di section 7) |
+| 6 | Our approach | index | Scroll horizontal 5 langkah |
+| 7a | Industry coverage | gaya "How we hunt" | Latar Flash White; baris nomor + nama; hover/scroll mengubah susunan puzzle |
+| 7b | For companies | gaya "How we hunt" | Latar Dark Slate; baris nomor · judul · deskripsi; kursor "View" |
+| 8–11 | Consultants, News & insights, CTA, Footer | index | Tidak berubah |
+
+QA: satu file tanpa request eksternal (4,2 MB); WCAG mobile 390/320 lolos (target ≥24 px, teks ≥12 px, tanpa scroll horizontal); reduced motion lengkap tanpa error.

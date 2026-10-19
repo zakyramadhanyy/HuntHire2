@@ -36,25 +36,16 @@
   <!-- Custom cursor: a puzzle piece that changes shape per target -->
   <div class="cursor" data-cursor aria-hidden="true"><span data-cursor-label></span></div>
 
-  <!-- INTRO: pieces drop in, click together, the bar floods the screen -->
+  <!-- 1. ON BOARDING: centred wordmark, counter below, and the Master Piece supergraphic
+       (Brand Guidelines p.33) building up behind it while the page loads; then it lifts away -->
   <div class="intro" data-intro aria-hidden="true">
-    <div class="intro__logo">
-      <svg class="intro__mark" viewBox="0 0 156 240" data-intro-mark>
-        <rect class="ip" x="0" y="0" width="66" height="66" />
-        <circle class="ip" cx="121" cy="35" r="35" />
-        <rect class="ip ip--bar" x="0" y="86" width="156" height="68" />
-        <circle class="ip" cx="35" cy="205" r="35" />
-        <rect class="ip" x="90" y="174" width="66" height="66" />
-      </svg>
-      <div class="intro__word" data-intro-word><b>Hunt</b>Hire</div>
-    </div>
-    <p class="intro__tag" data-intro-tag>Executive Recruitment Firm</p>
+    <div class="intro__pattern" data-intro-pattern></div>
+    <div class="intro__word" data-intro-word><b>Hunt</b>Hire</div>
     <span class="intro__count" data-intro-count>0</span>
-    <div class="intro__flood" data-intro-flood></div>
   </div>
 
   <!-- HEADER -->
-  <header class="header t-split" data-header>
+  <header class="header t-dark" data-header>
     <a href="#top" class="logo" data-logo aria-label="HuntHire home">
       <svg class="logo__mark" viewBox="0 0 156 240">
         <rect class="lp" x="0" y="0" width="66" height="66" /><circle class="lp" cx="121" cy="35" r="35" /><rect class="lp" x="0" y="86" width="156" height="68" /><circle class="lp" cx="35" cy="205" r="35" /><rect class="lp" x="90" y="174" width="66" height="66" />
@@ -78,7 +69,7 @@
     <div class="menu__inner">
       <div class="menu__group">
         <p class="menu__label">For Companies</p>
-        <a href="https://hunthire.id/services" class="menu__link">Our Services</a>
+        <a href="#services" class="menu__link">Our Services</a>
         <a href="#approach" class="menu__link">Our Approach</a>
         <a href="https://hunthire.id/contact" class="menu__link">Partner with us</a>
       </div>
@@ -103,114 +94,96 @@
 
   <main id="top" tabindex="-1">
 
-    <!-- 1. HERO — two audiences, one puzzle; pulls apart on scroll -->
-    <section class="hero" data-hero>
-      <div class="hero__sticky">
-        <div class="hero__back">
-          <p class="hero__statement" data-hero-statement>Every great team is a puzzle. We find the piece that fits.</p>
-          <!-- Background: supergraphic "HuntHire Master Piece" (Brand Guidelines p.33), cut into its shapes.
-               The shapes gather into the finished picture behind the statement as it fills in. -->
-          <div class="masterpiece" data-masterpiece aria-hidden="true">
-            <img class="mp" src="assets/masterpiece/mp-01.webp" alt="" style="left:0.34%;top:1.40%;width:11.67%" />
-            <img class="mp" src="assets/masterpiece/mp-02.webp" alt="" style="left:9.66%;top:1.83%;width:17.12%" />
-            <img class="mp" src="assets/masterpiece/mp-03.webp" alt="" style="left:27.80%;top:1.40%;width:13.52%" />
-            <img class="mp" src="assets/masterpiece/mp-04.webp" alt="" style="left:41.93%;top:2.34%;width:22.99%" />
-            <img class="mp" src="assets/masterpiece/mp-05.webp" alt="" style="left:57.08%;top:0.34%;width:42.69%" />
-            <img class="mp" src="assets/masterpiece/mp-06.webp" alt="" style="left:36.40%;top:13.07%;width:13.48%" />
-            <img class="mp" src="assets/masterpiece/mp-07.webp" alt="" style="left:51.25%;top:13.84%;width:13.11%" />
-            <img class="mp" src="assets/masterpiece/mp-08.webp" alt="" style="left:66.02%;top:13.84%;width:8.30%" />
-            <img class="mp" src="assets/masterpiece/mp-09.webp" alt="" style="left:28.37%;top:21.50%;width:7.20%" />
-            <img class="mp" src="assets/masterpiece/mp-10.webp" alt="" style="left:25.49%;top:31.72%;width:11.59%" />
-            <img class="mp" src="assets/masterpiece/mp-11.webp" alt="" style="left:1.48%;top:34.95%;width:18.98%" />
-            <img class="mp" src="assets/masterpiece/mp-12.webp" alt="" style="left:11.55%;top:43.55%;width:75.53%" />
-            <img class="mp" src="assets/masterpiece/mp-13.webp" alt="" style="left:33.37%;top:54.02%;width:23.83%" />
-            <img class="mp" src="assets/masterpiece/mp-14.webp" alt="" style="left:55.49%;top:55.13%;width:7.58%" />
-            <img class="mp" src="assets/masterpiece/mp-15.webp" alt="" style="left:1.17%;top:62.03%;width:16.21%" />
-            <img class="mp" src="assets/masterpiece/mp-16.webp" alt="" style="left:17.69%;top:62.54%;width:6.89%" />
-            <img class="mp" src="assets/masterpiece/mp-17.webp" alt="" style="left:26.02%;top:64.24%;width:7.12%" />
-            <img class="mp" src="assets/masterpiece/mp-18.webp" alt="" style="left:0.87%;top:72.41%;width:32.12%" />
-            <img class="mp" src="assets/masterpiece/mp-19.webp" alt="" style="left:25.68%;top:73.44%;width:8.37%" />
-            <img class="mp" src="assets/masterpiece/mp-20.webp" alt="" style="left:54.66%;top:69.69%;width:7.88%" />
-            <img class="mp" src="assets/masterpiece/mp-21.webp" alt="" style="left:63.22%;top:70.20%;width:6.93%" />
+    <!-- 2. HERO BANNER (ref-fleava) — photo slider; the next section slides up over it -->
+    <section class="hero" data-hero data-theme="dark">
+      <div class="hero__slides">
+        <div class="slide is-active"><img src="https://images.prismic.io/hunthire/ZoGHgh5LeNNTwqHa_recruitment.jpg?auto=format,compress&w=1800&q=80" alt="HuntHire consultants working together" /></div>
+        <div class="slide"><img src="https://images.prismic.io/hunthire/Z8UcrRsAHJWomCeY_pexels-kindelmedia-7688087.jpg?auto=format,compress&w=1800&q=80" alt="" /></div>
+        <div class="slide"><img src="https://images.prismic.io/hunthire/ZuoymrVsGrYSvfMv_P1003433-Enhanced-NR.jpg?auto=format,compress&w=1800&q=80" alt="" /></div>
+      </div>
+      <div class="hero__veil"></div>
+      <div class="hero__content" data-hero-content>
+        <div class="hero__texts">
+          <div class="htext is-active">
+            <p class="hero__label">Executive Search</p>
+            <h1 class="display"><span class="ln"><span>Hiring the people who</span></span><span class="ln"><span><em>move a business forward.</em></span></span></h1>
+          </div>
+          <div class="htext">
+            <p class="hero__label">For Companies</p>
+            <h2 class="display"><span class="ln"><span>Build the team your</span></span><span class="ln"><span><em>strategy needs.</em></span></span></h2>
+          </div>
+          <div class="htext">
+            <p class="hero__label">For Talent</p>
+            <h2 class="display"><span class="ln"><span>Find the role that</span></span><span class="ln"><span><em>fits who you are.</em></span></span></h2>
           </div>
         </div>
-
-        <div class="hero__split" data-split-root>
-          <a href="https://hunthire.id/contact" class="side side--client" data-side="client" data-cursor-text="Partner" data-cursor-tone="white">
-            <span class="side__label">For companies</span>
-            <h1 class="side__title" data-lines>Hire the<br />right team</h1>
-            <p class="side__text">Executive search across Indonesia and Southeast Asia, led by consultants who represent you with distinction.</p>
-            <span class="side__cta">Partner with us <i><svg><use href="#arrow" /></svg></i></span>
-          </a>
-          <a href="https://hunthire.id/apply" class="side side--talent" data-side="talent" data-cursor-text="Explore">
-            <span class="side__label">For talent</span>
-            <h2 class="side__title" data-lines>Find your<br />perfect fit</h2>
-            <p class="side__text">Senior and executive roles with the companies shaping FMCG, finance, tech, energy and health.</p>
-            <span class="side__cta">Explore jobs <i><svg><use href="#arrow" /></svg></i></span>
-          </a>
+        <div class="hero__ctrl">
+          <button type="button" data-prev data-cursor-text="Prev">Prev</button><span>/</span><button type="button" data-next data-cursor-text="Next">Next</button>
+          <div class="hero__bar"><i data-hero-bar></i></div>
         </div>
+      </div>
+      <p class="hero__scroll" aria-hidden="true">Scroll</p>
+    </section>
 
-        <svg class="hero__mark" viewBox="0 0 156 240" data-hero-mark aria-hidden="true">
-          <!-- Outer <g> leans the whole mark; each .hpw wrapper rearranges one piece on hover,
-               while the inner .hp pieces stay free for the scroll scatter animation -->
-          <g data-hero-lean>
-            <g class="hpw"><rect class="hp" x="0" y="0" width="66" height="66" /></g>
-            <g class="hpw"><circle class="hp" cx="121" cy="35" r="35" /></g>
-            <g class="hpw"><rect class="hp" x="0" y="86" width="156" height="68" /></g>
-            <g class="hpw"><circle class="hp" cx="35" cy="205" r="35" /></g>
-            <g class="hpw"><rect class="hp" x="90" y="174" width="66" height="66" /></g>
-          </g>
-        </svg>
-
-        <p class="hero__meta">Est. 2018 · Jakarta · ID SG MY PH TH VN</p>
-        <p class="hero__hint"><span></span>Scroll to pull the pieces apart</p>
+    <!-- 3. EVERY GREAT TEAM IS A PUZZLE (index) — the statement fills in as the Master Piece assembles behind it -->
+    <section class="statement" data-statement data-section="Our belief" data-theme="light">
+      <div class="statement__sticky">
+        <p class="statement__text" data-statement-text>Every great team is a puzzle. We find the piece that fits.</p>
+        <!-- Background: supergraphic "HuntHire Master Piece" (Brand Guidelines p.33), cut into its shapes -->
+        <div class="masterpiece" data-masterpiece aria-hidden="true">
+          <img class="mp" src="assets/masterpiece/mp-01.webp" alt="" style="left:0.34%;top:1.40%;width:11.67%" />
+          <img class="mp" src="assets/masterpiece/mp-02.webp" alt="" style="left:9.66%;top:1.83%;width:17.12%" />
+          <img class="mp" src="assets/masterpiece/mp-03.webp" alt="" style="left:27.80%;top:1.40%;width:13.52%" />
+          <img class="mp" src="assets/masterpiece/mp-04.webp" alt="" style="left:41.93%;top:2.34%;width:22.99%" />
+          <img class="mp" src="assets/masterpiece/mp-05.webp" alt="" style="left:57.08%;top:0.34%;width:42.69%" />
+          <img class="mp" src="assets/masterpiece/mp-06.webp" alt="" style="left:36.40%;top:13.07%;width:13.48%" />
+          <img class="mp" src="assets/masterpiece/mp-07.webp" alt="" style="left:51.25%;top:13.84%;width:13.11%" />
+          <img class="mp" src="assets/masterpiece/mp-08.webp" alt="" style="left:66.02%;top:13.84%;width:8.30%" />
+          <img class="mp" src="assets/masterpiece/mp-09.webp" alt="" style="left:28.37%;top:21.50%;width:7.20%" />
+          <img class="mp" src="assets/masterpiece/mp-10.webp" alt="" style="left:25.49%;top:31.72%;width:11.59%" />
+          <img class="mp" src="assets/masterpiece/mp-11.webp" alt="" style="left:1.48%;top:34.95%;width:18.98%" />
+          <img class="mp" src="assets/masterpiece/mp-12.webp" alt="" style="left:11.55%;top:43.55%;width:75.53%" />
+          <img class="mp" src="assets/masterpiece/mp-13.webp" alt="" style="left:33.37%;top:54.02%;width:23.83%" />
+          <img class="mp" src="assets/masterpiece/mp-14.webp" alt="" style="left:55.49%;top:55.13%;width:7.58%" />
+          <img class="mp" src="assets/masterpiece/mp-15.webp" alt="" style="left:1.17%;top:62.03%;width:16.21%" />
+          <img class="mp" src="assets/masterpiece/mp-16.webp" alt="" style="left:17.69%;top:62.54%;width:6.89%" />
+          <img class="mp" src="assets/masterpiece/mp-17.webp" alt="" style="left:26.02%;top:64.24%;width:7.12%" />
+          <img class="mp" src="assets/masterpiece/mp-18.webp" alt="" style="left:0.87%;top:72.41%;width:32.12%" />
+          <img class="mp" src="assets/masterpiece/mp-19.webp" alt="" style="left:25.68%;top:73.44%;width:8.37%" />
+          <img class="mp" src="assets/masterpiece/mp-20.webp" alt="" style="left:54.66%;top:69.69%;width:7.88%" />
+          <img class="mp" src="assets/masterpiece/mp-21.webp" alt="" style="left:63.22%;top:70.20%;width:6.93%" />
+        </div>
       </div>
     </section>
 
-    <!-- 2. THE PUZZLE — interactive drag & drop of the logo -->
-    <section class="game" id="puzzle" data-game data-section="How we work" data-theme="light">
-      <div class="game__copy">
-        <p class="eyebrow"><i></i>How we work</p>
-        <h2 class="h-xl" data-lines>Five pieces. One perfect fit.</h2>
-        <p class="game__lead">Every HuntHire placement is built from the same five pieces. Drag each one into the mark to see how we put a team together.</p>
-        <div class="game__info" data-game-info aria-live="polite">
-          <span class="game__info-tag" data-info-tag>Start here</span>
-          <h3 data-info-title>Grab any piece</h3>
-          <p data-info-text>Each shape stands for one part of how we hunt. Drop it on its outline.</p>
-        </div>
-        <div class="game__actions">
-          <button class="btn btn--night" data-game-solve data-magnetic>Solve it for me</button>
-          <button class="btn btn--ghost" data-game-reset data-magnetic>Reset</button>
-        </div>
+    <!-- 4. THE FIRM (ref-fleava) — Jade duotone photo opening from an inset frame to full bleed -->
+    <section class="firm" data-firm data-section="The firm" data-theme="dark">
+      <div class="firm__media" data-firm-media>
+        <img src="https://images.prismic.io/hunthire/Z8fCkRsAHJWomHzk_pexels-fauxels-3184638.jpg?auto=format,compress&w=1800&q=80" alt="" data-firm-img />
       </div>
-
-      <!-- The mark sits in the middle; the five pieces wait on either side of it -->
-      <div class="game__stage" data-stage>
-        <div class="game__tray game__tray--l" data-tray>
-          <button class="piece piece--ci" data-piece="1" aria-label="STAR approach piece"><span>STAR</span></button>
-          <button class="piece piece--bar" data-piece="2" aria-label="Network piece"><span>Network</span></button>
-        </div>
-        <div class="game__board" data-board>
-          <span class="slot slot--sq" data-slot="0"></span>
-          <span class="slot slot--ci" data-slot="1"></span>
-          <span class="slot slot--bar" data-slot="2"></span>
-          <span class="slot slot--ci" data-slot="3"></span>
-          <span class="slot slot--sq" data-slot="4"></span>
-          <p class="game__hint" data-game-hint><i></i>Drag a piece onto its outline</p>
-          <div class="game__done" data-game-done><b>Perfect fit.</b><span>That's how we build teams.</span></div>
-        </div>
-        <div class="game__tray game__tray--r" data-tray>
-          <button class="piece piece--sq" data-piece="0" aria-label="Research piece"><span>Research</span></button>
-          <button class="piece piece--ci" data-piece="3" aria-label="Speed piece"><span>Speed</span></button>
-          <button class="piece piece--sq" data-piece="4" aria-label="Responsibility piece"><span>Care</span></button>
-        </div>
-        <!-- Demonstration: a faint copy of a piece glides to its outline until the visitor tries it -->
-        <span class="ghost" data-ghost aria-hidden="true"></span>
+      <div class="firm__content" data-fade-out>
+        <p class="eyebrow eyebrow--light" data-up><i></i>The firm</p>
+        <h2 class="h-xl" data-lines>Built on research,<br />run on <em>speed.</em></h2>
+        <p class="firm__body" data-up>In-depth research, STAR-based screening and a network built across six countries mean every candidate we present meets at least 70% of your requirements.</p>
       </div>
-      <div class="confetti" data-confetti aria-hidden="true"></div>
     </section>
 
-    <!-- 3. APPROACH — horizontal scroll, one piece per step -->
+    <!-- 5. EXPERTISE (ref-fleava) — the services as one typographic line -->
+    <section class="expertise" id="expertise" data-section="Expertise" data-theme="dark">
+      <div class="expertise__inner" data-fade-out>
+        <p class="eyebrow eyebrow--light" data-up><i></i>Expertise</p>
+        <p class="expertise__body" data-up>We partner with companies that need more than a CV. Every engagement is led by a consultant who knows your market.</p>
+        <ul class="inline-list" data-stagger>
+          <li><a href="#services">Contingency Search<sup>01</sup></a></li>
+          <li><a href="#services">Project-Based Hiring<sup>02</sup></a></li>
+          <li><a href="#services">Tailored Solutions<sup>03</sup></a></li>
+          <li><a href="#services">Executive Coaching<sup>04</sup></a></li>
+          <li class="inline-list__more"><a href="#services" class="more">Explore all services <svg><use href="#arrow" /></svg></a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. OUR APPROACH (index) — horizontal scroll, one piece per step -->
     <section class="approach" id="approach" data-approach data-section="Our approach" data-theme="dark">
       <div class="approach__head">
         <p class="eyebrow eyebrow--light"><i></i>Our approach</p>
@@ -255,69 +228,48 @@
       </div>
     </section>
 
-    <!-- 4. NUMBERS -->
-    <section class="numbers" data-numbers data-section="At a glance" data-theme="light">
-      <div class="stat"><span class="stat__shape stat__shape--sq"></span><b data-count="2018">2018</b><span>Established in Jakarta</span></div>
-      <div class="stat"><span class="stat__shape stat__shape--ci"></span><b data-count="6">6</b><span>Countries served</span></div>
-      <div class="stat"><span class="stat__shape stat__shape--bar"></span><b data-count="10">10</b><span>Industries covered</span></div>
-      <div class="stat"><span class="stat__shape stat__shape--ci"></span><b data-count="70" data-suffix="%+">70%+</b><span>Minimum requirement match</span></div>
-    </section>
-
-    <!-- 5. INDUSTRIES — same pieces, a new picture per industry -->
-    <section class="industries" data-industries data-section="Industries" data-theme="light">
-      <div class="industries__visual">
-        <div class="arrange" data-arrange>
-          <i class="ar ar--sq"></i><i class="ar ar--ci"></i><i class="ar ar--bar"></i><i class="ar ar--ci"></i><i class="ar ar--sq"></i>
-        </div>
-        <p class="industries__caption" data-arrange-caption>Same five pieces. A different picture for every industry.</p>
-      </div>
-      <div class="industries__list">
-        <p class="eyebrow"><i></i>Industry coverage</p>
-        <ul data-industry-list>
-          <li>FMCG</li><li>FSI</li><li>Manufacturers</li><li>Digital Banks</li><li>Financial Tech</li>
-          <li>Telco</li><li>Renewable Energy</li><li>Pharmaceutical</li><li>Health</li><li>Tobacco</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- 6. SERVICES — accordion with shape-masked image -->
-    <section class="services" data-services data-section="Services" data-theme="light">
-      <div class="services__head">
-        <p class="eyebrow"><i></i>For companies</p>
-        <h2 class="h-xl" data-lines>Services built around your hire.</h2>
-      </div>
-      <div class="services__body">
-        <div class="services__media">
-          <!-- One photo per service; the frame keeps its rounded shape and only the photo changes -->
-          <div class="services__mask" data-service-mask>
-            <img class="is-active" src="https://images.prismic.io/hunthire/ZoGHgh5LeNNTwqHa_recruitment.jpg?auto=format,compress&w=1000&q=80" alt="HuntHire consultants working with a client team" />
-            <img src="https://images.prismic.io/hunthire/Z8fCkRsAHJWomHzk_pexels-fauxels-3184638.jpg?auto=format,compress&w=1000&q=80" alt="" />
-            <img src="https://images.prismic.io/hunthire/Z8UcrRsAHJWomCeY_pexels-kindelmedia-7688087.jpg?auto=format,compress&w=1000&q=80" alt="" />
-            <img src="https://images.prismic.io/hunthire/ZuoymrVsGrYSvfMv_P1003433-Enhanced-NR.jpg?auto=format,compress&w=1000&q=80" alt="" />
+    <!-- 7a. INDUSTRY COVERAGE — "How we hunt" rows (ref-fleava) with the puzzle picture per industry (index) -->
+    <section class="coverage" id="industries" data-industries data-section="Industries" data-theme="light">
+      <div class="coverage__wrap">
+        <p class="eyebrow eyebrow--light coverage__label" data-up><i></i>Industry coverage</p>
+        <div class="coverage__grid">
+          <div class="industries__visual">
+            <div class="arrange" data-arrange>
+              <i class="ar ar--sq"></i><i class="ar ar--ci"></i><i class="ar ar--bar"></i><i class="ar ar--ci"></i><i class="ar ar--sq"></i>
+            </div>
+            <p class="industries__caption" data-arrange-caption>Same five pieces. A different picture for every industry.</p>
           </div>
-        </div>
-        <div class="acc" data-acc>
-          <div class="acc__item is-open" data-shape="sq">
-            <button class="acc__btn" aria-expanded="true"><span class="acc__num">01</span>Contingency Service<i></i></button>
-            <div class="acc__panel"><p>We handle the entire recruitment process, from research to onboarding, fostering a committed partnership to secure top talent aligned with your company culture.</p></div>
-          </div>
-          <div class="acc__item" data-shape="ci">
-            <button class="acc__btn" aria-expanded="false"><span class="acc__num">02</span>Project-Based Service<i></i></button>
-            <div class="acc__panel"><p>For targeted hiring projects with specific headcounts and timelines, we assign a dedicated consultant team to meet your KPIs within agreed timelines.</p></div>
-          </div>
-          <div class="acc__item" data-shape="bar">
-            <button class="acc__btn" aria-expanded="false"><span class="acc__num">03</span>Tailored Service<i></i></button>
-            <div class="acc__panel"><p>Every organization faces unique hiring challenges. Let's discuss your needs, and we'll tailor a solution to support your hiring goals and vision.</p></div>
-          </div>
-          <div class="acc__item" data-shape="ci2">
-            <button class="acc__btn" aria-expanded="false"><span class="acc__num">04</span>Business &amp; Executive Coaching<i></i></button>
-            <div class="acc__panel"><p>Coaching programmes for leaders and teams. <a href="https://hunthire.id/services">See the full service list</a>.</p></div>
-          </div>
+          <ol class="rows" data-industry-list data-stagger>
+            <li class="row row--compact"><span class="row__meta"><b>01</b></span><span class="row__t">FMCG</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>02</b></span><span class="row__t">FSI</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>03</b></span><span class="row__t">Manufacturers</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>04</b></span><span class="row__t">Digital Banks</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>05</b></span><span class="row__t">Financial Tech</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>06</b></span><span class="row__t">Telco</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>07</b></span><span class="row__t">Renewable Energy</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>08</b></span><span class="row__t">Pharmaceutical</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>09</b></span><span class="row__t">Health</span></li>
+            <li class="row row--compact"><span class="row__meta"><b>10</b></span><span class="row__t">Tobacco</span></li>
+          </ol>
         </div>
       </div>
     </section>
 
-    <!-- 7. HUNTERS — consultants in shape masks -->
+    <!-- 7b. FOR COMPANIES — services as "How we hunt" rows (ref-fleava) -->
+    <section class="coverage coverage--services" id="services" data-section="For companies" data-theme="dark">
+      <div class="coverage__wrap">
+        <p class="eyebrow eyebrow--light coverage__label" data-up><i></i>For companies</p>
+        <h2 class="h-xl coverage__title" data-lines>Services built around your hire.</h2>
+        <ol class="rows" data-stagger>
+          <li><a class="row" href="https://hunthire.id/services" data-cursor-text="View"><div class="row__meta"><b>01</b><br />Contingency</div><h3 class="row__t">Contingency Service</h3><p class="row__d">We handle the entire recruitment process, from research to onboarding, fostering a committed partnership to secure top talent aligned with your company culture.</p></a></li>
+          <li><a class="row" href="https://hunthire.id/services" data-cursor-text="View"><div class="row__meta"><b>02</b><br />Project</div><h3 class="row__t">Project-Based Service</h3><p class="row__d">For targeted hiring projects with specific headcounts and timelines, we assign a dedicated consultant team to meet your KPIs within agreed timelines.</p></a></li>
+          <li><a class="row" href="https://hunthire.id/services" data-cursor-text="View"><div class="row__meta"><b>03</b><br />Tailored</div><h3 class="row__t">Tailored Service</h3><p class="row__d">Every organization faces unique hiring challenges. Let's discuss your needs, and we'll tailor a solution to support your hiring goals and vision.</p></a></li>
+          <li><a class="row" href="https://hunthire.id/services" data-cursor-text="View"><div class="row__meta"><b>04</b><br />Coaching</div><h3 class="row__t">Business &amp; Executive Coaching</h3><p class="row__d">Coaching programmes that help leaders and teams perform at their best.</p></a></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 8. MEET OUR CONSULTANTS (index) — consultants in shape masks -->
     <section class="hunters" id="hunters" data-hunters data-section="Our hunters" data-theme="dark">
       <div class="hunters__head">
         <div>
@@ -329,7 +281,7 @@
       <div class="hunters__grid" data-hunter-grid></div>
     </section>
 
-    <!-- 8. INSIGHTS — rows with cursor-following preview -->
+    <!-- 9. NEWS & INSIGHTS (index) — rows with cursor-following preview -->
     <section class="insights" id="insights" data-insights data-section="Insights" data-theme="dark">
       <div class="insights__head">
         <p class="eyebrow"><i></i>News &amp; insights</p>
@@ -339,7 +291,7 @@
       <div class="preview" data-preview aria-hidden="true"><img data-preview-img alt="" /></div>
     </section>
 
-    <!-- 9. CTA — a field of pieces that reacts to the cursor -->
+    <!-- 10. CTA (index) — a field of pieces that reacts to the cursor -->
     <section class="cta" data-cta data-section="Let's talk" data-theme="lime">
       <div class="field" data-field aria-hidden="true"></div>
       <div class="cta__content">
@@ -352,12 +304,12 @@
     </section>
   </main>
 
-  <!-- FOOTER -->
+  <!-- 11. FOOTER (index) -->
   <footer class="footer" data-footer data-section="Contact" data-theme="dark">
     <div class="footer__grid">
       <div class="footer__col">
         <h5>For Companies</h5>
-        <a href="https://hunthire.id/services">Our Services</a><a href="#approach">Our Approach</a><a href="https://hunthire.id/contact">Partner with us</a>
+        <a href="#services">Our Services</a><a href="#approach">Our Approach</a><a href="https://hunthire.id/contact">Partner with us</a>
       </div>
       <div class="footer__col">
         <h5>For Talent</h5>
